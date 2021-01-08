@@ -1,6 +1,6 @@
-# Tides App
-## Analytics from the NOAA Tides & Currents API
+# Tides - Analytics from the NOAA Tides & Currents API
 ### Setup:
 - Install Docker
-- Run ```docker-compose up``` in root directory
+- Install docker-compose
+- Run ```docker-compose up``` in root directory (you may need ```sudo``` if you didn't set up Docker to run )
 - Go to http://localhost:3000
