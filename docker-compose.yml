@@ -2,15 +2,20 @@ version: "3.9"
 
 services:
 
+  # Defines build for Flask app
   api:
     build:
       context: ./api
       dockerfile: Dockerfile.dev
     ports:
       - "5000:5000"
+    # A volume basically mounts your source folder in the Docker
+    # container so you don't have to restart the whole container
+    # on every change
     volumes:
       - ./api:/app
 
+  # Defines build for React app
   ui:
     build:
       context: ./ui
