@@ -1,0 +1,23 @@
+# Pull official base image
+# slim-buster is Debian-based, but a smaller image
+FROM python:3.8-slim-buster
+
+# Set working directory to container's "/app" folder
+WORKDIR /app
+
+# Environmnent variables Flask needs, running in debug mode
+ENV FLASK_APP=app:app
+ENV FLASK_DEBUG=1
+
+# Install dependencies on Docker container
+COPY requirements.txt requirements.txt
+RUN python3 -m pip install -r requirements.txt
+
+# Add metadata to the image to describe that the container is listening on port 5000
+EXPOSE 5000
+
+# Copy the rest of the application to Docker container
+COPY . .
+
+# Start Flask app
+CMD ["flask", "run", "--host", "0.0.0.0", "--port", "5000", "--no-debugger"]

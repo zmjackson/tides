@@ -1,0 +1,18 @@
+# Pull official base image
+# buster-slim is Debian-based, but a smaller image
+FROM node:14-buster-slim
+
+# Set working directory to container's "app" folder
+WORKDIR /app
+
+# Copy package info to Docker container
+COPY package.json /app
+
+# Install dependencies on Docker container
+RUN yarn install
+
+# Copy the rest of the application to Docker container
+COPY . .
+
+# Start React app
+CMD ["yarn", "run", "start"]
