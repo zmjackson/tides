@@ -2,12 +2,44 @@ import React, {useState, useEffect} from 'react';
 import logo from './logo.svg';
 import './App.css';
 
+interface StationMetaData {
+  readonly id: number;
+  readonly latitude: number;
+  readonly longitude: number;
+  readonly name: string;
+}
+
+// interface WaterLevel {
+//   readonly time: string;
+//   readonly value: number;
+//   readonly sigma: number;
+//   readonly flags: string;
+//   readonly qualityAssurance: string;
+// }
+
+// interface StationData {
+//   data: WaterLevel[];
+//   metadata: StationMetaData;  
+// }
+
 function App() {
-  const [currentTime, setCurrentTime] = useState(0);
+  const [metaData, setMetaData] = useState<StationMetaData>({
+    id: 0, 
+    latitude: 0, 
+    longitude: 0, 
+    name: ''
+  });
 
   useEffect(() => {
-    fetch('/time').then(res => res.json()).then(data => {
-      setCurrentTime(data.time);
+    fetch('/basic_test')
+    .then(res => res.json())
+    .then(res => {
+      setMetaData({
+        id: res.metadata.id, 
+        latitude: res.metadata.lat, 
+        longitude: res.metadata.lon, 
+        name: res.metadata.name
+      });
     });
   }, []);
 
@@ -26,7 +58,7 @@ function App() {
         >
           Learn React
         </a>
-        <p>Flask says the current time is: {currentTime}.</p>
+        <p>{metaData.name} has coordinates: {metaData.latitude}, {metaData.longitude}.</p>
       </header>
     </div>
   );
