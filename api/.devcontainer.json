@@ -1,0 +1,14 @@
+{
+    "name": "Flask API Container",
+    "dockerComposeFile": [
+        "../docker-compose.yml"
+    ],
+    "service": "api",
+    // Prevents accidentally closing both containers
+    // when you close a workspace
+    "shutdownAction": "none",
+    "extensions": [
+        "ms-python.python"
+    ],
+    "workspaceFolder": "/app"
+}

@@ -1,0 +1,11 @@
+{
+    "name": "React UI Container",
+    "dockerComposeFile": [
+        "../docker-compose.yml"
+    ],
+    "service": "ui",
+    "shutdownAction": "none",
+    "extensions": [],
+    // Open the sub-folder with the source code
+    "workspaceFolder": "/app"
+}

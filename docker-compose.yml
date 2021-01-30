@@ -13,7 +13,7 @@ services:
     # container so you don't have to restart the whole container
     # on every change
     volumes:
-      - ./api:/app
+      - ./api:/app:cached
 
   # Defines build for React app
   ui:
@@ -23,5 +23,7 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - "./ui:/app"
-      - "/app/node_modules"
+      - ./ui:/app:cached
+      - /app/node_modules
+    links:
+      - api
