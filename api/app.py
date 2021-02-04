@@ -38,7 +38,6 @@ def coords_test():
 def getCoordsOfAllStations():
     server = 'https://api.tidesandcurrents.noaa.gov/api/prod/datagetter'
     date = 'latest'
-    # station = '8727520'  # Cedar Key
     product = 'water_level'
     datum = 'STND'
     units = 'english'
@@ -46,15 +45,13 @@ def getCoordsOfAllStations():
     application = 'uf_tides'
     res_format = 'json'
 
-    stationIds = open("Database/station_ids.txt", "r")
-    resDictList = []
+    station_ids = open("Database/station_ids.txt", "r")
+    res_dict_list = []
     
-    for x in stationIds:
-        print(x)
-        station = x
+    for station in station_ids:
         req = server + '?' + '&'.join(['date=' + date, 'station=' + station, 'product=' + product, 'datum=' + datum,
                                     'units=' + units, 'time_zone=' + time_zone, 'application=' + application, 'format=' + res_format])
         res = requests.get(req)
-        resJson = res.json()
-        resDictList.append(resJson)
-    return json.dumps(resDictList)
+        res_json = res.json()
+        res_dict_list.append(res_json)
+    return json.dumps(res_dict_list)
