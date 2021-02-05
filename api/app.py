@@ -70,4 +70,3 @@ def coopsAPI_getData(stationID, startDate, endDate, product):
     lists = output.to_json(orient = 'table')
     
     return json.loads(lists)
-    return res.json()
