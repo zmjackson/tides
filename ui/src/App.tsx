@@ -1,10 +1,17 @@
 import React, {useState, useEffect} from 'react';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import FavoritesMap from "./components/FavoritesMap";
+import { MapContainer, TileLayer, Marker, Popup, Tooltip } from 'react-leaflet';
+import L, { LatLngExpression } from "leaflet";
+import "leaflet/dist/leaflet.css";
 
 import logo from './logo.svg';
 import './App.css';
-import L from 'leaflet';
+
+interface StationsData {
+  stationName: string,
+  stationID: number,
+  lat: number,
+  lon: number,
+};
 
 interface StationMetaData {
   readonly id: number;
@@ -47,6 +54,31 @@ function App() {
     });
   }, []);
 
+  const position : LatLngExpression = [39.1350, -98.0317];
+    const zoom : number = 3;
+
+    const icon : L.DivIcon = L.divIcon({
+        className: "station-icon",
+        iconSize: [30, 30],
+        iconAnchor: [0, 0],
+        popupAnchor: [15, 0]
+    });
+
+    const list : StationsData[] = [
+        {
+            stationName: "California Dreamin",
+            stationID: 123456,
+            lat: 40.91088362120013, 
+            lon: -125.752799203777597
+        },
+        {
+            stationName: metaData.name,
+            stationID: metaData.id,
+            lat: metaData.latitude, 
+            lon: metaData.longitude
+        }
+    ];
+
   return (
     <div className="App">
       <header className="App-header">
@@ -65,7 +97,22 @@ function App() {
         <p>{metaData.name} has coordinates: {metaData.latitude}, {metaData.longitude}.</p>
       </header>
       <div>
-      <FavoritesMap />
+      <MapContainer center={position} zoom={zoom} scrollWheelZoom={true}>
+            <TileLayer
+            attribution="&copy; <a href='http://osm.org/copyright'>OpenStreetMap</a> contributors"
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+            {list.map((item, index) => 
+    <Marker icon={icon} key={index} position={[item.lat, item.lon]}>
+      <Tooltip direction="top" offset={[15, 0]}>
+       {item.stationName}
+     </Tooltip>
+        <Popup>
+            <strong>{item.stationName} at {item.stationID}</strong><br />
+        </Popup>
+    </Marker>
+          )}
+        </MapContainer>
       </div>
     </div>
   );

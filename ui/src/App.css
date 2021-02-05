@@ -41,16 +41,16 @@
   height: 600px;
 }
 
-.hot-chocolate-icon {
+.station-icon {
   background: white;
   border-radius: 50%;
   box-shadow: 0px 0px 10px black;
 }
 
-.hot-chocolate-icon:after {
+.station-icon:after {
   display: block;
   width: 30px;
   height: 30px;
-  content: "☕";
+  content: "🌊";
   font-size: 20px;
 }
