@@ -1,4 +1,6 @@
 from flask import Flask
+from CoopsApi import CoopsApi
+import datetime
 import time
 import requests
 import json
@@ -55,3 +57,17 @@ def getCoordsOfAllStations():
         res_json = res.json()
         res_dict_list.append(res_json)
     return json.dumps(res_dict_list)
+
+@app.route('/coopsAPI_getData/<stationID>/<startDate>/<endDate>/<product>')
+def coopsAPI_getData(stationID, startDate, endDate, product):
+    dateFormat = '%Y-%m-%d'
+    startDateFormated = datetime.datetime.strptime(startDate, dateFormat)
+    endDateFormated = datetime.datetime.strptime(startDate, dateFormat)
+    coopsApi = CoopsApi()
+    [output, errors] = coopsApi.get_data(stationID, [startDateFormated, endDateFormated], product)
+    print("Errors: " + str(errors))
+
+    lists = output.to_json(orient = 'table')
+    
+    return json.loads(lists)
+    return res.json()
