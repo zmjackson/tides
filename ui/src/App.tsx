@@ -2,15 +2,22 @@ import React, {useState, useEffect} from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Tooltip } from 'react-leaflet';
 import L, { LatLngExpression } from "leaflet";
 import "leaflet/dist/leaflet.css";
+import * as data from './response.json';
 
 import logo from './logo.svg';
 import './App.css';
+import { toEditorSettings } from 'typescript';
+
 
 interface StationsData {
   stationName: string,
   stationID: number,
   lat: number,
   lon: number,
+  t: string;
+  v: number;
+  s: number;
+  f: string;
 };
 
 interface StationMetaData {
@@ -18,6 +25,10 @@ interface StationMetaData {
   readonly latitude: number;
   readonly longitude: number;
   readonly name: string;
+  readonly t: string;
+  readonly v: number;
+  readonly s: number;
+  readonly f: string;
 }
 
 // interface WaterLevel {
@@ -38,7 +49,11 @@ function App() {
     id: 0, 
     latitude: 0, 
     longitude: 0, 
-    name: ''
+    name: '', 
+    t:'',
+    v: 0,
+    s: 0,
+    f: ''
   });
 
   useEffect(() => {
@@ -49,7 +64,11 @@ function App() {
         id: res.metadata.id, 
         latitude: res.metadata.lat, 
         longitude: res.metadata.lon, 
-        name: res.metadata.name
+        name: res.metadata.name,
+        t: "exapletime",
+        v: 0,
+        s: 0,
+        f: ''
       });
     });
   }, []);
@@ -64,27 +83,34 @@ function App() {
         popupAnchor: [15, 0]
     });
 
-    const list : StationsData[] = [
-        {
-            stationName: "California Dreamin",
-            stationID: 123456,
-            lat: 40.91088362120013, 
-            lon: -125.752799203777597
-        },
-        {
-            stationName: metaData.name,
-            stationID: metaData.id,
-            lat: metaData.latitude, 
-            lon: metaData.longitude
-        }
-    ];
+    const list : StationsData[] = [];
+
+
+const siteArray: any[] = Array.of(data);
+let innerArray = siteArray[0].default;
+
+for (let i = 0; i < innerArray.length; i++)
+{
+  if(innerArray[i].hasOwnProperty('metadata'))
+  {
+    list.push({stationName: innerArray[i].metadata.name,
+    stationID: +innerArray[i].metadata.id,
+    lat: +innerArray[i].metadata.lat, 
+    lon: +innerArray[i].metadata.lon, 
+    t: innerArray[i].data[0].t, 
+    v: +innerArray[i].data[0].v,
+    s: +innerArray[i].data[0].s, 
+    f: innerArray[i].data[0].f})
+  }
+}
+
 
   return (
     <div className="App">
       <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
         <p>
-          Edit whyyy<code>src/App.tsx</code> and save to reload.
+          Edit {Object.keys(data).length} <code>src/App.tsx</code> and save to reload.
         </p>
         <a
           className="App-link"
@@ -108,7 +134,12 @@ function App() {
        {item.stationName}
      </Tooltip>
         <Popup>
-            <strong>{item.stationName} at {item.stationID}</strong><br />
+            <strong>Station Name: {item.stationName}</strong><br />
+            <strong>Station ID: {item.stationID}</strong><br />
+            <strong>Last Updated: {item.t}</strong><br />
+            <strong>V: {item.v}</strong><br />
+            <strong>S: {item.s}</strong><br />
+            <strong>F: {item.f}</strong><br />
         </Popup>
     </Marker>
           )}
