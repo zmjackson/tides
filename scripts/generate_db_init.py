@@ -14,16 +14,22 @@ for station_id in ids:
 
 print('Writing metadata to file...')
 with open('../db/init.sql', 'w') as init_sql:
-    """
-    CREATE DATABASE tides;
-    USE tides;
+    init_sql.write(    
+"""CREATE DATABASE tides;
+USE tides;
 
-    CREATE TABLE station_metadata (
-        id INTEGER NOT NULL,
-        name VARCHAR(255) NOT NULL,
-        coordinate POINT NOT NULL,
-        PRIMARY KEY (id)
-    );
-    """
+CREATE TABLE station_metadata (
+    id INTEGER NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    coordinate POINT NOT NULL,
+    PRIMARY KEY (id)
+);
+
+INSERT INTO station_metadata
+    (id, name, coordinate)
+VALUES
+""")
+
     for station in metadata:
-        init_sql.write('{}:{}:{}:{}\n'.format(station[0], station[1], station[2], station[3]))
+        delimiter = ';' if station == metadata[-1] else ','
+        init_sql.write("({}, '{}', ST_GeomFromText('POINT({} {})', 4326)){}\n".format(station[0], station[1].replace("'", "''"), station[2], station[3], delimiter))

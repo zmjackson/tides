@@ -51,16 +51,16 @@ def get_station_metadata():
     cnx = connect_to_db()
 
     cursor = cnx.cursor()
-    query = "SELECT id, name, ST_X(coordinate), ST_Y(coordinate) FROM station_metadata"
+    query = "SELECT id, name, ST_Latitude(coordinate), ST_Longitude(coordinate) FROM station_metadata"
     cursor.execute(query)
-
-    cursor.close()
-    cnx.close()
 
     metadata = []
 
     for (station_id, name, lat, lon) in cursor:
         metadata.append(
             {'id': station_id, 'name': name, 'lat': lat, 'lon': lon})
+            
+    cursor.close()
+    cnx.close()
 
     return json.dumps(metadata)
