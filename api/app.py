@@ -4,6 +4,7 @@ import mysql.connector
 import os
 import requests
 import time
+from datetime import datetime
 
 app = Flask(__name__)
 
@@ -86,28 +87,34 @@ def get_flood_level_data(flood_level, station_id, start_date, end_date):
     res = requests.get(req)
     resJson = res.json()
     flood = {}
-    floodCollection = []
-    floodLevels = []
-    floodCollectionData = {}
-    started = False
+    flood_levels = []
+    flood_collection = []
+    flood_collection_data_json = {}
+    flood_started = False
+
     for resJson in resJson['data']:
         if(resJson['v'] >= flood_level):
-            if(started == False):
+            if(flood_started == False):
                 flood['start_date'] = resJson['t']
-            floodLevels.append(resJson['v'])
-            started = True
-        elif(resJson['v'] < flood_level and started):
+            flood_levels.append(resJson['v'])
+            flood_started = True
+        elif(resJson['v'] < flood_level and flood_started):
             flood['end_date'] = resJson['t']
-            flood['flood_levels'] = floodLevels
-            floodCollection.append(flood)
-            
+            flood_collection.append(flood)
+            start_time = datetime.strptime(flood['start_date'], "%Y-%m-%d %H:%M")
+            end_time = datetime.strptime(flood['end_date'], "%Y-%m-%d %H:%M")
+            time_delta = str(abs(end_time - start_time))
+            print(time_delta)
+            flood['duration'] = json.dumps(time_delta)
+            flood['flood_levels'] = flood_levels
+
             # reset values
-            floodLevels = []
+            flood_levels = []
             flood = {}
-            started = False
+            flood_started = False
 
 
-    floodCollectionData['data'] = floodCollection
+    flood_collection_data_json['data'] = flood_collection
 
-    ret = json.dumps(floodCollectionData)
+    ret = json.dumps(flood_collection_data_json)
     return ret
