@@ -64,3 +64,50 @@ def get_station_metadata():
     cnx.close()
 
     return json.dumps(metadata)
+
+
+@app.route('/getFloodLevelData/<flood_level>/<station_id>/<start_date>/<end_date>')
+def get_flood_level_data(flood_level, station_id, start_date, end_date):
+    server = 'https://api.tidesandcurrents.noaa.gov/api/prod/datagetter'
+    start_date = start_date
+    end_date = end_date
+    station_id = station_id
+    product = 'water_level'
+    datum = 'STND'
+    units = 'english'
+    time_zone = 'gmt'
+    application = 'uf_tides'
+    res_format = 'json'
+
+    req = server + '?' + '&'.join(['begin_date=' + start_date, 'end_date=' + end_date, 'station=' + station_id, 'product=' + product, 'datum=' + datum,
+                                   'units=' + units, 'time_zone=' + time_zone, 'application=' + application, 'format=' + res_format])
+    print(req, flush=True)
+
+    res = requests.get(req)
+    resJson = res.json()
+    flood = {}
+    floodCollection = []
+    floodLevels = []
+    floodCollectionData = {}
+    started = False
+    for resJson in resJson['data']:
+        if(resJson['v'] >= flood_level):
+            if(started == False):
+                flood['start_date'] = resJson['t']
+            floodLevels.append(resJson['v'])
+            started = True
+        elif(resJson['v'] < flood_level and started):
+            flood['end_date'] = resJson['t']
+            flood['flood_levels'] = floodLevels
+            floodCollection.append(flood)
+            
+            # reset values
+            floodLevels = []
+            flood = {}
+            started = False
+
+
+    floodCollectionData['data'] = floodCollection
+
+    ret = json.dumps(floodCollectionData)
+    return ret
