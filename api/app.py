@@ -99,13 +99,25 @@ def get_flood_level_data(flood_level, station_id, start_date, end_date):
             flood_levels.append(resJson['v'])
             flood_started = True
         elif(resJson['v'] < flood_level and flood_started):
+            # get end date
             flood['end_date'] = resJson['t']
             flood_collection.append(flood)
+
+
+            # get duration
             start_time = datetime.strptime(flood['start_date'], "%Y-%m-%d %H:%M")
             end_time = datetime.strptime(flood['end_date'], "%Y-%m-%d %H:%M")
             time_delta = str(abs(end_time - start_time))
-            print(time_delta)
             flood['duration'] = json.dumps(time_delta)
+
+            # get average of flood levels
+            sum = 0
+            for values in flood_levels:
+                sum = sum + float(values)
+
+            average = sum/len(flood_levels)
+            flood['average'] = "{:.3f}".format(average)
+            
             flood['flood_levels'] = flood_levels
 
             # reset values
