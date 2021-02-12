@@ -1,8 +1,9 @@
 from flask import Flask
-import time
-import requests
 import json
-import array as arr 
+import mysql.connector
+import os
+import requests
+import time
 
 app = Flask(__name__)
 
@@ -34,24 +35,32 @@ def coords_test():
     return res.json()
 
 
-@app.route('/getCoordsOfAllStations')
-def getCoordsOfAllStations():
-    server = 'https://api.tidesandcurrents.noaa.gov/api/prod/datagetter'
-    date = 'latest'
-    product = 'water_level'
-    datum = 'STND'
-    units = 'english'
-    time_zone = 'gmt'
-    application = 'uf_tides'
-    res_format = 'json'
+def connect_to_db():
+    config = {
+        'user': 'root',
+        'password': 'root',
+        'host': 'db',
+        'port': '3306',
+        'database': 'tides'
+    }
+    return mysql.connector.connect(**config)
 
-    station_ids = open("Database/station_ids.txt", "r")
-    res_dict_list = []
-    
-    for station in station_ids:
-        req = server + '?' + '&'.join(['date=' + date, 'station=' + station, 'product=' + product, 'datum=' + datum,
-                                    'units=' + units, 'time_zone=' + time_zone, 'application=' + application, 'format=' + res_format])
-        res = requests.get(req)
-        res_json = res.json()
-        res_dict_list.append(res_json)
-    return json.dumps(res_dict_list)
+
+@app.route('/station_metadata')
+def get_station_metadata():
+    cnx = connect_to_db()
+
+    cursor = cnx.cursor()
+    query = "SELECT id, name, ST_Latitude(coordinate), ST_Longitude(coordinate) FROM station_metadata"
+    cursor.execute(query)
+
+    metadata = []
+
+    for (station_id, name, lat, lon) in cursor:
+        metadata.append(
+            {'id': station_id, 'name': name, 'lat': lat, 'lon': lon})
+            
+    cursor.close()
+    cnx.close()
+
+    return json.dumps(metadata)
