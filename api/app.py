@@ -95,14 +95,17 @@ def get_flood_level_data(flood_level, station_id, start_date, end_date):
     metadata = {}
     all_flood_levels = []
 
+    index = 0
+    resJson_length = len(resJson['data'])
     for resJson in resJson['data']:
-        if(resJson['v'] >= flood_level):
+        index = (index + 1)
+        all_flood_levels.append(resJson['v'])
+        if(float(resJson['v']) >= float(flood_level)):
             if(flood_started == False):
                 flood['start_date'] = resJson['t']
             flood_levels.append(resJson['v'])
-            all_flood_levels.append(resJson['v'])
             flood_started = True
-        elif(resJson['v'] < flood_level and flood_started):
+        if((float(resJson['v']) < float(flood_level) and flood_started) or (index == resJson_length and flood_started == True)):
             # get end date
             flood['end_date'] = resJson['t']
 
@@ -141,7 +144,10 @@ def get_flood_level_data(flood_level, station_id, start_date, end_date):
     for values in all_flood_levels:
         sum = sum + float(values)
 
-    average = sum/len(all_flood_levels)
+    average = 0
+    if(len(all_flood_levels) > 0):
+        average = sum/len(all_flood_levels)
+
     metadata['overall_average'] = "{:.3f}".format(average)
 
     # store data in json
