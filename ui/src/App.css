@@ -38,7 +38,7 @@
 }
 
 .leaflet-container {
-  height: 600px;
+  height: 800px;
 }
 
 .station-icon {
@@ -53,6 +53,12 @@
   height: 30px;
   content: "🌊";
   font-size: 20px;
+}
+
+.dialogSideBySide {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
 }
 
 .dialogDiv {
