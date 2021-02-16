@@ -3,6 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup, Tooltip } from 'react-leaflet';
 import L, { LatLngExpression } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import './App.css';
+import SiteView from './SiteView'
 
 interface StationMetaData {
   readonly id: number;
@@ -11,7 +12,7 @@ interface StationMetaData {
   readonly lon: number;
 }
 
-function App() {
+export default function App() {
   const [metaData, setMetaData] = useState<StationMetaData[]>([]);
 
   useEffect(() => {
@@ -46,6 +47,7 @@ function App() {
               <Popup>
                 <strong>Station Name: {station.name}</strong><br />
                 <strong>Station ID: {station.id}</strong><br />
+                <SiteView name = {station.name} id = {station.id} lat = {station.lat} lon = {station.lon} ></SiteView>
               </Popup>
             </Marker>
           )}
@@ -54,5 +56,3 @@ function App() {
     </div>
   );
 }
-
-export default App;
