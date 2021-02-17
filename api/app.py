@@ -95,9 +95,7 @@ def get_flood_level_data(flood_level, station_id, start_date, end_date):
     print(date_range)
     if(date_range > 31):
         number_of_requests = math.ceil(date_range / 31)
-        print("split into mulitple requests")
         
-
     flood = {}
     flood_levels = []
     flood_collection = []
@@ -106,8 +104,7 @@ def get_flood_level_data(flood_level, station_id, start_date, end_date):
     num_of_floods = 0
     metadata = {}
     all_flood_levels = []
-    print("number of requests")
-    print(number_of_requests)
+
     for x in range(number_of_requests):
         # add 31 days to start date if more than one request
         if(number_of_requests > 1):
@@ -117,8 +114,6 @@ def get_flood_level_data(flood_level, station_id, start_date, end_date):
             else:
                 end_date = (datetime.strptime(start_date, "%Y%m%d") + timedelta(days=date_range)).strftime("%Y%m%d")
                 date_range = 0
-        print("end_date")
-        print(end_date)
         req = server + '?' + '&'.join(['begin_date=' + start_date, 'end_date=' + end_date, 'station=' + station_id, 'product=' + product, 'datum=' + datum,
                                    'units=' + units, 'time_zone=' + time_zone, 'application=' + application, 'format=' + res_format])
         print(req, flush=True)
@@ -131,48 +126,47 @@ def get_flood_level_data(flood_level, station_id, start_date, end_date):
         # update start date to be one past the end date
         start_date = (datetime.strptime(end_date, "%Y%m%d") + timedelta(days=1)).strftime("%Y%m%d")
         date_range = date_range - 1
-        print("start_date")
-        print(start_date, flush=True)
-        # for resJson in resJson['data']:
-        #     index = (index + 1)
-        #     all_flood_levels.append(resJson['v'])
-        #     # print(resJson['v'])
-        #     if(float(resJson['v']) >= float(flood_level)):
-        #         if(flood_started == False):
-        #             flood['start_date'] = resJson['t']
-        #         flood_levels.append(resJson['v'])
-        #         flood_started = True
-        #     if((float(resJson['v']) < float(flood_level) and flood_started) or (index == resJson_length and flood_started == True)):
-        #         # get end date
-        #         flood['end_date'] = resJson['t']
 
-        #         # get duration
-        #         start_time = datetime.strptime(flood['start_date'], "%Y-%m-%d %H:%M")
-        #         end_time = datetime.strptime(flood['end_date'], "%Y-%m-%d %H:%M")
-        #         time_delta = str(abs(end_time - start_time))
-        #         flood['duration'] = time_delta
+        for resJson in resJson['data']:
+            index = (index + 1)
+            all_flood_levels.append(resJson['v'])
+            # print(resJson['v'])
+            if(float(resJson['v']) >= float(flood_level)):
+                if(flood_started == False):
+                    flood['start_date'] = resJson['t']
+                flood_levels.append(resJson['v'])
+                flood_started = True
+            if((float(resJson['v']) < float(flood_level) and flood_started) or (index == resJson_length and flood_started == True and x == number_of_requests - 1)):
+                # get end date
+                flood['end_date'] = resJson['t']
 
-        #         # increment number of floods
-        #         num_of_floods = num_of_floods + 1
+                # get duration
+                start_time = datetime.strptime(flood['start_date'], "%Y-%m-%d %H:%M")
+                end_time = datetime.strptime(flood['end_date'], "%Y-%m-%d %H:%M")
+                time_delta = str(abs(end_time - start_time))
+                flood['duration'] = time_delta
 
-        #         # get average of flood levels
-        #         sum = 0
-        #         for values in flood_levels:
-        #             sum = sum + float(values)
+                # increment number of floods
+                num_of_floods = num_of_floods + 1
 
-        #         average = sum/len(flood_levels)
-        #         flood['average'] = "{:.3f}".format(average)
+                # get average of flood levels
+                sum = 0
+                for values in flood_levels:
+                    sum = sum + float(values)
+
+                average = sum/len(flood_levels)
+                flood['average'] = "{:.3f}".format(average)
                 
-        #         # Store flood levels
-        #         flood['flood_levels'] = flood_levels
+                # Store flood levels
+                flood['flood_levels'] = flood_levels
 
-        #         # store flood data
-        #         flood_collection.append(flood)
+                # store flood data
+                flood_collection.append(flood)
 
-        #         # reset values
-        #         flood_levels = []
-        #         flood = {}
-        #         flood_started = False
+                # reset values
+                flood_levels = []
+                flood = {}
+                flood_started = False
 
     # metadata
     metadata['num_of_floods'] = num_of_floods
@@ -192,4 +186,4 @@ def get_flood_level_data(flood_level, station_id, start_date, end_date):
     flood_collection_data_json['metadata'] = metadata
 
     ret = json.dumps(flood_collection_data_json)
-    return res.json()
+    return ret
