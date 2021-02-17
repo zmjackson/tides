@@ -125,6 +125,7 @@ def get_flood_level_data(flood_level, station_id, start_date, end_date):
 
         # update start date to be one past the end date
         start_date = (datetime.strptime(end_date, "%Y%m%d") + timedelta(days=1)).strftime("%Y%m%d")
+        # date range decreased by one bc our start date uses one of the those days
         date_range = date_range - 1
 
         for resJson in resJson['data']:
