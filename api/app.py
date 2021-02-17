@@ -5,6 +5,8 @@ import os
 import requests
 import time
 from datetime import datetime
+from datetime import timedelta
+import math
 
 app = Flask(__name__)
 
@@ -79,13 +81,23 @@ def get_flood_level_data(flood_level, station_id, start_date, end_date):
     time_zone = 'gmt'
     application = 'uf_tides'
     res_format = 'json'
+    
+    number_of_requests = 1
+    # parse through date_range and divide into 
+    # multiple requests if date range is greater than 31 days
+    start_time = datetime.strptime(start_date, "%Y%m%d")
+    end_time = datetime.strptime(end_date, "%Y%m%d")
+    date_range_string = str(abs(end_time - start_time))
 
-    req = server + '?' + '&'.join(['begin_date=' + start_date, 'end_date=' + end_date, 'station=' + station_id, 'product=' + product, 'datum=' + datum,
-                                   'units=' + units, 'time_zone=' + time_zone, 'application=' + application, 'format=' + res_format])
-    print(req, flush=True)
+    date_range = int(date_range_string.split(" ")[0])
 
-    res = requests.get(req)
-    resJson = res.json()
+    print(date_range_string)
+    print(date_range)
+    if(date_range > 31):
+        number_of_requests = math.ceil(date_range / 31)
+        print("split into mulitple requests")
+        
+
     flood = {}
     flood_levels = []
     flood_collection = []
@@ -94,48 +106,65 @@ def get_flood_level_data(flood_level, station_id, start_date, end_date):
     num_of_floods = 0
     metadata = {}
     all_flood_levels = []
+    print("number of requests")
+    print(number_of_requests)
+    for x in range(number_of_requests):
+        # add 31 days to start date
+        end_date = (datetime.strptime(start_date, "%Y%m%d") + timedelta(days=31)).strftime("%Y%m%d")
+        print("end_date")
+        print(end_date)
+        req = server + '?' + '&'.join(['begin_date=' + start_date, 'end_date=' + end_date, 'station=' + station_id, 'product=' + product, 'datum=' + datum,
+                                   'units=' + units, 'time_zone=' + time_zone, 'application=' + application, 'format=' + res_format])
+        print(req, flush=True)
+        res = requests.get(req)
+        resJson = res.json()
+        index = 0
+        resJson_length = len(resJson['data'])
 
-    index = 0
-    resJson_length = len(resJson['data'])
-    for resJson in resJson['data']:
-        index = (index + 1)
-        all_flood_levels.append(resJson['v'])
-        if(float(resJson['v']) >= float(flood_level)):
-            if(flood_started == False):
-                flood['start_date'] = resJson['t']
-            flood_levels.append(resJson['v'])
-            flood_started = True
-        if((float(resJson['v']) < float(flood_level) and flood_started) or (index == resJson_length and flood_started == True)):
-            # get end date
-            flood['end_date'] = resJson['t']
+        # update start date to be one past the end date
+        # start_date = (datetime.strptime(end_date, "%Y%m%d") + timedelta(days=1)).strftime("%Y%m%d")
+        print("start_date")
+        print(start_date, flush=True)
+        # for resJson in resJson['data']:
+        #     index = (index + 1)
+        #     all_flood_levels.append(resJson['v'])
+        #     # print(resJson['v'])
+        #     if(float(resJson['v']) >= float(flood_level)):
+        #         if(flood_started == False):
+        #             flood['start_date'] = resJson['t']
+        #         flood_levels.append(resJson['v'])
+        #         flood_started = True
+        #     if((float(resJson['v']) < float(flood_level) and flood_started) or (index == resJson_length and flood_started == True)):
+        #         # get end date
+        #         flood['end_date'] = resJson['t']
 
-            # get duration
-            start_time = datetime.strptime(flood['start_date'], "%Y-%m-%d %H:%M")
-            end_time = datetime.strptime(flood['end_date'], "%Y-%m-%d %H:%M")
-            time_delta = str(abs(end_time - start_time))
-            flood['duration'] = time_delta
+        #         # get duration
+        #         start_time = datetime.strptime(flood['start_date'], "%Y-%m-%d %H:%M")
+        #         end_time = datetime.strptime(flood['end_date'], "%Y-%m-%d %H:%M")
+        #         time_delta = str(abs(end_time - start_time))
+        #         flood['duration'] = time_delta
 
-            # increment number of floods
-            num_of_floods = num_of_floods + 1
+        #         # increment number of floods
+        #         num_of_floods = num_of_floods + 1
 
-            # get average of flood levels
-            sum = 0
-            for values in flood_levels:
-                sum = sum + float(values)
+        #         # get average of flood levels
+        #         sum = 0
+        #         for values in flood_levels:
+        #             sum = sum + float(values)
 
-            average = sum/len(flood_levels)
-            flood['average'] = "{:.3f}".format(average)
-            
-            # Store flood levels
-            flood['flood_levels'] = flood_levels
+        #         average = sum/len(flood_levels)
+        #         flood['average'] = "{:.3f}".format(average)
+                
+        #         # Store flood levels
+        #         flood['flood_levels'] = flood_levels
 
-            # store flood data
-            flood_collection.append(flood)
+        #         # store flood data
+        #         flood_collection.append(flood)
 
-            # reset values
-            flood_levels = []
-            flood = {}
-            flood_started = False
+        #         # reset values
+        #         flood_levels = []
+        #         flood = {}
+        #         flood_started = False
 
     # metadata
     metadata['num_of_floods'] = num_of_floods
@@ -155,4 +184,4 @@ def get_flood_level_data(flood_level, station_id, start_date, end_date):
     flood_collection_data_json['metadata'] = metadata
 
     ret = json.dumps(flood_collection_data_json)
-    return ret
+    return res.json()
