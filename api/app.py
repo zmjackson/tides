@@ -109,20 +109,28 @@ def get_flood_level_data(flood_level, station_id, start_date, end_date):
     print("number of requests")
     print(number_of_requests)
     for x in range(number_of_requests):
-        # add 31 days to start date
-        end_date = (datetime.strptime(start_date, "%Y%m%d") + timedelta(days=31)).strftime("%Y%m%d")
+        # add 31 days to start date if more than one request
+        if(number_of_requests > 1):
+            if(date_range > 31):
+                end_date = (datetime.strptime(start_date, "%Y%m%d") + timedelta(days=31)).strftime("%Y%m%d")
+                date_range = date_range - 31
+            else:
+                end_date = (datetime.strptime(start_date, "%Y%m%d") + timedelta(days=date_range)).strftime("%Y%m%d")
+                date_range = 0
         print("end_date")
         print(end_date)
         req = server + '?' + '&'.join(['begin_date=' + start_date, 'end_date=' + end_date, 'station=' + station_id, 'product=' + product, 'datum=' + datum,
                                    'units=' + units, 'time_zone=' + time_zone, 'application=' + application, 'format=' + res_format])
         print(req, flush=True)
         res = requests.get(req)
+
         resJson = res.json()
         index = 0
         resJson_length = len(resJson['data'])
 
         # update start date to be one past the end date
-        # start_date = (datetime.strptime(end_date, "%Y%m%d") + timedelta(days=1)).strftime("%Y%m%d")
+        start_date = (datetime.strptime(end_date, "%Y%m%d") + timedelta(days=1)).strftime("%Y%m%d")
+        date_range = date_range - 1
         print("start_date")
         print(start_date, flush=True)
         # for resJson in resJson['data']:
