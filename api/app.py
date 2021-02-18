@@ -5,6 +5,8 @@ import os
 import requests
 import time
 from datetime import datetime
+from datetime import timedelta
+import math
 
 app = Flask(__name__)
 
@@ -79,13 +81,19 @@ def get_flood_level_data(flood_level, station_id, start_date, end_date):
     time_zone = 'gmt'
     application = 'uf_tides'
     res_format = 'json'
+    
+    number_of_requests = 1
+    # parse through date_range and divide into 
+    # multiple requests if date range is greater than 31 days
+    start_time = datetime.strptime(start_date, "%Y%m%d")
+    end_time = datetime.strptime(end_date, "%Y%m%d")
+    date_range_string = str(abs(end_time - start_time))
 
-    req = server + '?' + '&'.join(['begin_date=' + start_date, 'end_date=' + end_date, 'station=' + station_id, 'product=' + product, 'datum=' + datum,
-                                   'units=' + units, 'time_zone=' + time_zone, 'application=' + application, 'format=' + res_format])
-    print(req, flush=True)
+    date_range = int(date_range_string.split(" ")[0])
 
-    res = requests.get(req)
-    resJson = res.json()
+    if(date_range > 31):
+        number_of_requests = math.ceil(date_range / 31)
+        
     flood = {}
     flood_levels = []
     flood_collection = []
@@ -95,47 +103,69 @@ def get_flood_level_data(flood_level, station_id, start_date, end_date):
     metadata = {}
     all_flood_levels = []
 
-    index = 0
-    resJson_length = len(resJson['data'])
-    for resJson in resJson['data']:
-        index = (index + 1)
-        all_flood_levels.append(resJson['v'])
-        if(float(resJson['v']) >= float(flood_level)):
-            if(flood_started == False):
-                flood['start_date'] = resJson['t']
-            flood_levels.append(resJson['v'])
-            flood_started = True
-        if((float(resJson['v']) < float(flood_level) and flood_started) or (index == resJson_length and flood_started == True)):
-            # get end date
-            flood['end_date'] = resJson['t']
+    for x in range(number_of_requests):
+        # add 31 days to start date if more than one request
+        if(number_of_requests > 1):
+            if(date_range > 31):
+                end_date = (datetime.strptime(start_date, "%Y%m%d") + timedelta(days=31)).strftime("%Y%m%d")
+                date_range = date_range - 31
+            else:
+                end_date = (datetime.strptime(start_date, "%Y%m%d") + timedelta(days=date_range)).strftime("%Y%m%d")
+                date_range = 0
+        req = server + '?' + '&'.join(['begin_date=' + start_date, 'end_date=' + end_date, 'station=' + station_id, 'product=' + product, 'datum=' + datum,
+                                   'units=' + units, 'time_zone=' + time_zone, 'application=' + application, 'format=' + res_format])
+        print(req, flush=True)
+        res = requests.get(req)
 
-            # get duration
-            start_time = datetime.strptime(flood['start_date'], "%Y-%m-%d %H:%M")
-            end_time = datetime.strptime(flood['end_date'], "%Y-%m-%d %H:%M")
-            time_delta = str(abs(end_time - start_time))
-            flood['duration'] = time_delta
+        resJson = res.json()
+        index = 0
+        resJson_length = len(resJson['data'])
 
-            # increment number of floods
-            num_of_floods = num_of_floods + 1
+        # update start date to be one past the end date
+        start_date = (datetime.strptime(end_date, "%Y%m%d") + timedelta(days=1)).strftime("%Y%m%d")
+        # date range decreased by one bc our start date uses one of the those days
+        date_range = date_range - 1
 
-            # get average of flood levels
-            sum = 0
-            for values in flood_levels:
-                sum = sum + float(values)
+        for resJson in resJson['data']:
+            index = (index + 1)
+            all_flood_levels.append(resJson['v'])
+            # print(resJson['v'])
+            if(float(resJson['v']) >= float(flood_level)):
+                if(flood_started == False):
+                    flood['start_date'] = resJson['t']
+                flood_levels.append(resJson['v'])
+                flood_started = True
+            if((float(resJson['v']) < float(flood_level) and flood_started) or (index == resJson_length and flood_started == True and x == number_of_requests - 1)):
+                # get end date
+                flood['end_date'] = resJson['t']
 
-            average = sum/len(flood_levels)
-            flood['average'] = "{:.3f}".format(average)
-            
-            # Store flood levels
-            flood['flood_levels'] = flood_levels
+                # get duration
+                start_time = datetime.strptime(flood['start_date'], "%Y-%m-%d %H:%M")
+                end_time = datetime.strptime(flood['end_date'], "%Y-%m-%d %H:%M")
+                time_delta = str(abs(end_time - start_time))
+                flood['duration'] = time_delta
 
-            # store flood data
-            flood_collection.append(flood)
+                # increment number of floods
+                num_of_floods = num_of_floods + 1
 
-            # reset values
-            flood_levels = []
-            flood = {}
-            flood_started = False
+                # get average of flood levels
+                sum = 0
+                for values in flood_levels:
+                    sum = sum + float(values)
+
+                average = sum/len(flood_levels)
+                flood['average'] = "{:.3f}".format(average)
+                
+                # Store flood levels
+                flood['flood_levels'] = flood_levels
+
+                # store flood data
+                flood_collection.append(flood)
+
+                # reset values
+                flood_levels = []
+                flood = {}
+                flood_started = False
 
     # metadata
     metadata['num_of_floods'] = num_of_floods
@@ -148,6 +178,7 @@ def get_flood_level_data(flood_level, station_id, start_date, end_date):
     if(len(all_flood_levels) > 0):
         average = sum/len(all_flood_levels)
 
+    # overall average of all water levels
     metadata['overall_average'] = "{:.3f}".format(average)
 
     # store data in json
