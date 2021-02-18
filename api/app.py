@@ -91,8 +91,6 @@ def get_flood_level_data(flood_level, station_id, start_date, end_date):
 
     date_range = int(date_range_string.split(" ")[0])
 
-    print(date_range_string)
-    print(date_range)
     if(date_range > 31):
         number_of_requests = math.ceil(date_range / 31)
         
