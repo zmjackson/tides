@@ -180,6 +180,7 @@ def get_flood_level_data(flood_level, station_id, start_date, end_date):
     if(len(all_flood_levels) > 0):
         average = sum/len(all_flood_levels)
 
+    # overall average of all water levels
     metadata['overall_average'] = "{:.3f}".format(average)
 
     # store data in json
