@@ -102,6 +102,7 @@ def get_flood_level_data(flood_level, station_id, start_date, end_date):
     num_of_floods = 0
     metadata = {}
     all_flood_levels = []
+    all_water_level_dates = []
 
     for x in range(number_of_requests):
         # add 31 days to start date if more than one request
@@ -129,6 +130,7 @@ def get_flood_level_data(flood_level, station_id, start_date, end_date):
         for resJson in resJson['data']:
             index = (index + 1)
             all_flood_levels.append(resJson['v'])
+            all_water_level_dates.append(resJson['t'])
             # print(resJson['v'])
             if(float(resJson['v']) >= float(flood_level)):
                 if(flood_started == False):
@@ -180,6 +182,8 @@ def get_flood_level_data(flood_level, station_id, start_date, end_date):
 
     # overall average of all water levels
     metadata['overall_average'] = "{:.3f}".format(average)
+    metadata['all_water_levels'] = all_flood_levels
+    metadata['all_water_level_dates'] = all_water_level_dates
 
     # store data in json
     flood_collection_data_json['data'] = flood_collection

@@ -18,6 +18,7 @@ import DialogTitle from "@material-ui/core/DialogTitle";
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
 import { ENGINE_METHOD_RAND } from 'constants';
+import ChartComponent from './ChartComponent'
 
 const useStyles = makeStyles({
   table: {
@@ -40,6 +41,8 @@ export default function SiteView(props: StationMetaData) {
   const [floodThreshold, setFloodThreshold] = React.useState("0");
   const [numFloods, setNumFloods] = React.useState(0);
   const [overallAverage, setOverallAverage] = React.useState(0);
+  const [allWaterLevels, setAllWaterLevels] = React.useState([]);
+  const [allWaterLevelDates, setAllWaterLevelDates] = React.useState([]);
   //const [floodList, setFloodList] = React.useState([{"start_date": " ", "end_date": " ", "duration": " ", "average": " "}]);
   const [displayRows, setdisplayRows] = React.useState([{ "start": "", "end": "", "duration": "", "average": ""}]);
   var rows = [{ "start": "", "end": "", "duration": "", "average": ""}];
@@ -59,6 +62,8 @@ export default function SiteView(props: StationMetaData) {
       .then(res => {
         setNumFloods(res.metadata.num_of_floods);
         setOverallAverage(res.metadata.overallAverage);
+        setAllWaterLevels(res.metadata.all_water_levels);
+        setAllWaterLevelDates(res.metadata.all_water_level_dates);
         floodList = res.data;
       })
       .then(res => {
@@ -148,6 +153,9 @@ export default function SiteView(props: StationMetaData) {
           </Table>
         </TableContainer>
         </div>
+        </div>
+        <div className = 'linechart'>
+          <ChartComponent data = {allWaterLevels} labels = {allWaterLevelDates}/>
         </div>
         <br />
         <br />
