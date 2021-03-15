@@ -7,6 +7,7 @@ import { Line } from 'react-chartjs-2'
 
 const sixMinsToHours = 10;
 const sixMinsToDay = 240;
+const sixMinsToWeek = 1680;
 interface chartMetaData {
    chartData: number[]
    labels: string[]
@@ -33,25 +34,30 @@ export default function ChartComponent(props: chartMetaData) {
          tempLabels[j] = props.labels[i];
          j++;
       }
-      // props.chartData = chartDataTemp.slice(0);
    }
    else if(props.resolution === '1 day') {
       unitConversion = sixMinsToDay;
       let j = 0;
-      // alert(props.chartData.length);
       for(let i = 0; i < props.chartData.length; i = i + unitConversion){
          chartDataTemp[j] = props.chartData[i]; 
          tempLabels[j] = props.labels[i];
          j++;
       }
-      // props.chartData = chartDataTemp.slice(0);
+   }
+   else if(props.resolution === '1 week') {
+      unitConversion = sixMinsToWeek;
+      let j = 0;
+      for(let i = 0; i < props.chartData.length; i = i + unitConversion){
+         chartDataTemp[j] = props.chartData[i]; 
+         tempLabels[j] = props.labels[i];
+         j++;
+      }
    }
 
    if(props.normalorAverage === 'Normal') {
-      
+
    }
    else if(props.normalorAverage === 'Average') {
-      // alert(unitConversion);
       let average: number = 0;
       let sum: number = 0;
       let j = 0;
@@ -63,10 +69,20 @@ export default function ChartComponent(props: chartMetaData) {
          i = i + k;
          average = sum/unitConversion;
          chartDataTemp[j] = average;
-         tempLabels[j] = tempLabels[j].split(" ")[0];
+         if(unitConversion === sixMinsToWeek) {
+            if(tempLabels[j+1] !== undefined) {
+               tempLabels[j] = tempLabels[j].split(" ")[0] + '-' + tempLabels[j + 1].split(" ")[0]
+            }
+         }
+         else {
+            tempLabels[j] = tempLabels[j].split(" ")[0];
+         }
          sum = 0;
          average = 0;
          j++;
+      }
+      if(unitConversion === sixMinsToWeek) {
+         tempLabels.pop();
       }
    }
 

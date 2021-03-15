@@ -162,6 +162,7 @@ export default function SiteView(props: StationMetaData) {
             <FormControlLabel value="6 mins" control={<Radio />} label="6 mins" />
             <FormControlLabel value="1 hour" control={<Radio />} label="1 hour" />
             <FormControlLabel value="1 day" control={<Radio />} label="1 day" />
+            <FormControlLabel value="1 week" control={<Radio />} label="1 week" />
           </RadioGroup>
           <RadioGroup row aria-label="NormalorAverage" name="NormalorAverage" onChange = {(e)=> setNormalorAverage(e.target.value)} value = {normalorAverage}>
             <FormControlLabel value="Normal" control={<Radio />} label="Normal" />
