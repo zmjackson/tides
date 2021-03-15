@@ -44,6 +44,7 @@ export default function SiteView(props: StationMetaData) {
   const [allWaterLevels, setAllWaterLevels] = React.useState([]);
   const [allWaterLevelDates, setAllWaterLevelDates] = React.useState([]);
   const [chartResolution, setChartResolution] = React.useState('6 mins')
+  const [normalorAverage, setNormalorAverage] = React.useState('Normal');
   //const [floodList, setFloodList] = React.useState([{"start_date": " ", "end_date": " ", "duration": " ", "average": " "}]);
   const [displayRows, setdisplayRows] = React.useState([{ "start": "", "end": "", "duration": "", "average": ""}]);
   var rows = [{ "start": "", "end": "", "duration": "", "average": ""}];
@@ -156,11 +157,15 @@ export default function SiteView(props: StationMetaData) {
         </div>
         </div>
         <div className = 'linechart'>
-          <ChartComponent chartData = {allWaterLevels} labels = {allWaterLevelDates} resolution = {chartResolution}/>
+          <ChartComponent chartData = {allWaterLevels} labels = {allWaterLevelDates} resolution = {chartResolution} normalorAverage = {normalorAverage}/>
           <RadioGroup row aria-label="timeResolution" name="timeResolution" onChange = {(e)=> setChartResolution(e.target.value)} value = {chartResolution}>
             <FormControlLabel value="6 mins" control={<Radio />} label="6 mins" />
             <FormControlLabel value="1 hour" control={<Radio />} label="1 hour" />
             <FormControlLabel value="1 day" control={<Radio />} label="1 day" />
+          </RadioGroup>
+          <RadioGroup row aria-label="NormalorAverage" name="NormalorAverage" onChange = {(e)=> setNormalorAverage(e.target.value)} value = {normalorAverage}>
+            <FormControlLabel value="Normal" control={<Radio />} label="Normal" />
+            <FormControlLabel value="Average" control={<Radio />} label="Average" />
           </RadioGroup>
         </div>
         <br />
