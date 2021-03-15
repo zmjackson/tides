@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Tooltip } from 'react-leaflet';
 import L, { LatLngExpression } from "leaflet";
-import { Button, Modal, TextField } from '@material-ui/core';
+import { Button, Checkbox, Modal, RadioGroup, TextField, FormControlLabel, Radio } from '@material-ui/core';
 import "leaflet/dist/leaflet.css";
 import './App.css';
 import { makeStyles } from '@material-ui/core/styles';
@@ -36,13 +36,14 @@ interface StationMetaData {
 export default function SiteView(props: StationMetaData) {
   const [metaData, setMetaData] = useState<StationMetaData[]>([]);
   const [open, setOpen] = React.useState(false);
-  const [startDate, setStartDate] = React.useState("1969-04-20");
-  const [endDate, setEndDate] = React.useState("1969-04-20");
+  const [startDate, setStartDate] = React.useState("2021-01-01");
+  const [endDate, setEndDate] = React.useState("2021-01-02");
   const [floodThreshold, setFloodThreshold] = React.useState("0");
   const [numFloods, setNumFloods] = React.useState(0);
   const [overallAverage, setOverallAverage] = React.useState(0);
   const [allWaterLevels, setAllWaterLevels] = React.useState([]);
   const [allWaterLevelDates, setAllWaterLevelDates] = React.useState([]);
+  const [chartResolution, setChartResolution] = React.useState('6 mins')
   //const [floodList, setFloodList] = React.useState([{"start_date": " ", "end_date": " ", "duration": " ", "average": " "}]);
   const [displayRows, setdisplayRows] = React.useState([{ "start": "", "end": "", "duration": "", "average": ""}]);
   var rows = [{ "start": "", "end": "", "duration": "", "average": ""}];
@@ -155,7 +156,12 @@ export default function SiteView(props: StationMetaData) {
         </div>
         </div>
         <div className = 'linechart'>
-          <ChartComponent data = {allWaterLevels} labels = {allWaterLevelDates}/>
+          <ChartComponent chartData = {allWaterLevels} labels = {allWaterLevelDates} resolution = {chartResolution}/>
+          <RadioGroup row aria-label="timeResolution" name="timeResolution" onChange = {(e)=> setChartResolution(e.target.value)} value = {chartResolution}>
+            <FormControlLabel value="6 mins" control={<Radio />} label="6 mins" />
+            <FormControlLabel value="1 hour" control={<Radio />} label="1 hour" />
+            <FormControlLabel value="1 day" control={<Radio />} label="1 day" />
+          </RadioGroup>
         </div>
         <br />
         <br />
