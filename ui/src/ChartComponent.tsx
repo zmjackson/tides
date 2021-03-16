@@ -1,13 +1,13 @@
 import React from 'react'
 import { Line } from 'react-chartjs-2'
-import Chart from 'chart.js'
-import  ChartAnnotation from 'chartjs-plugin-annotation';
+// import Chart from 'chart.js'
+// import  ChartAnnotation from 'chartjs-plugin-annotation';
 
 // Chart.plugins.register([ChartAnnotation]); // Global
 
 const sixMinsToHours = 10;
 const sixMinsToDay = 240;
-const sixMinsToWeek = 1680;
+const sixMinsToWeek = 1680; //(60mins/hour*24hours/day*7day/week)/(6mins)/week
 interface chartMetaData {
    chartData: number[]
    labels: string[]
@@ -47,10 +47,21 @@ export default function ChartComponent(props: chartMetaData) {
    else if(props.resolution === '1 week') {
       unitConversion = sixMinsToWeek;
       let j = 0;
-      for(let i = 0; i < props.chartData.length; i = i + unitConversion){
+      let length = props.chartData.length;
+      for(let i = 0; i < props.chartData.length;){
          chartDataTemp[j] = props.chartData[i]; 
          tempLabels[j] = props.labels[i];
          j++;
+         if(length < unitConversion && length > 0) {
+            console.log(length)
+            i = i + length - sixMinsToDay;
+            length = 0;
+            console.log(length);
+         }
+         else {
+            i = i + unitConversion;
+            length = length - unitConversion;
+         }
       }
    }
 
@@ -63,11 +74,11 @@ export default function ChartComponent(props: chartMetaData) {
       let j = 0;
       for(let i = 0; i < props.chartData.length; ) {
          let k = 0;
-         for(; k < unitConversion; k++){
+         for(; (k < unitConversion && (k+i) < props.chartData.length); k++){
             sum = sum + +props.chartData[k + i];
          }
          i = i + k;
-         average = sum/unitConversion;
+         average = sum/k;
          chartDataTemp[j] = +average.toFixed(3);
          if(unitConversion === sixMinsToWeek) {
             if(tempLabels[j+1] !== undefined) {
@@ -118,22 +129,22 @@ export default function ChartComponent(props: chartMetaData) {
         }]
       }     
     }
-    const annotation = {
-      annotations: [{
-         type: 'line',
-         mode: 'horizontal',
-         scaleID: 'y-axis-0',
-         value: 5,
-         borderColor: 'rgb(75, 192, 192)',
-         borderWidth: 4,
-         label: {
-           enabled: false,
-           content: 'Test label'
-         }
-       }]
-    }
+   //  const annotation = {
+   //    annotations: [{
+   //       type: 'line',
+   //       mode: 'horizontal',
+   //       scaleID: 'y-axis-0',
+   //       value: 5,
+   //       borderColor: 'rgb(75, 192, 192)',
+   //       borderWidth: 4,
+   //       label: {
+   //         enabled: false,
+   //         content: 'Test label'
+   //       }
+   //     }]
+   //  }
    
    return (
-     <Line data={data} options = {options} plugins={[ChartAnnotation]}/>
+     <Line data={data} options = {options}/>
    )
 }
