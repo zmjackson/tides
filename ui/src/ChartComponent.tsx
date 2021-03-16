@@ -1,7 +1,7 @@
 import React from 'react'
 import { Line } from 'react-chartjs-2'
-// import Chart from 'chart.js'
-// import  ChartAnnotation from 'chartjs-plugin-annotation';
+import Chart from 'chart.js'
+import  ChartAnnotation from 'chartjs-plugin-annotation';
 
 // Chart.plugins.register([ChartAnnotation]); // Global
 
@@ -54,10 +54,10 @@ export default function ChartComponent(props: chartMetaData) {
       }
    }
 
-   if(props.normalorAverage === 'Normal') {
+   if(props.normalorAverage === 'Normal' || props.resolution === '6 mins') {
 
    }
-   else if(props.normalorAverage === 'Average') {
+   else if(props.normalorAverage === 'Average' && props.resolution !== '6 mins') {
       let average: number = 0;
       let sum: number = 0;
       let j = 0;
@@ -68,14 +68,16 @@ export default function ChartComponent(props: chartMetaData) {
          }
          i = i + k;
          average = sum/unitConversion;
-         chartDataTemp[j] = average;
+         chartDataTemp[j] = +average.toFixed(3);
          if(unitConversion === sixMinsToWeek) {
             if(tempLabels[j+1] !== undefined) {
                tempLabels[j] = tempLabels[j].split(" ")[0] + '-' + tempLabels[j + 1].split(" ")[0]
             }
          }
          else {
-            tempLabels[j] = tempLabels[j].split(" ")[0];
+            if(tempLabels[j] !== undefined) {
+               tempLabels[j] = tempLabels[j].split(" ")[0];
+            }
          }
          sum = 0;
          average = 0;
@@ -132,6 +134,6 @@ export default function ChartComponent(props: chartMetaData) {
     }
    
    return (
-     <Line data={data} options = {options}/>
+     <Line data={data} options = {options} plugins={[ChartAnnotation]}/>
    )
 }
