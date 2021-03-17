@@ -48,20 +48,25 @@ export default function ChartComponent(props: chartMetaData) {
       unitConversion = sixMinsToWeek;
       let j = 0;
       let length = props.chartData.length;
-      for(let i = 0; i < props.chartData.length;){
+      let alteredUnitConversion = unitConversion;
+      if(props.normalorAverage === 'Average') {
+         alteredUnitConversion = alteredUnitConversion - sixMinsToDay;
+      }
+      for(let i = 0; i < props.chartData.length; i = i + alteredUnitConversion){
          chartDataTemp[j] = props.chartData[i]; 
          tempLabels[j] = props.labels[i];
          j++;
-         if(length < unitConversion && length > 0) {
-            console.log(length)
-            i = i + length - sixMinsToDay;
-            length = 0;
-            console.log(length);
-         }
-         else {
-            i = i + unitConversion;
-            length = length - unitConversion;
-         }
+         // console.log("here");
+         // console.log(length)
+         // if(length < unitConversion && length > 0) {
+         //    i = i + length - sixMinsToDay;
+         //    length = 0;
+         //    console.log(length);
+         // }
+         // else {
+         //    i = i + unitConversion;
+         //    length = length - unitConversion;
+         // }
       }
    }
 
@@ -75,10 +80,14 @@ export default function ChartComponent(props: chartMetaData) {
       for(let i = 0; i < props.chartData.length; ) {
          let k = 0;
          for(; (k < unitConversion && (k+i) < props.chartData.length); k++){
+            // console.log(+props.chartData[k+i]);
             sum = sum + +props.chartData[k + i];
          }
          i = i + k;
+         // console.log(k);
+         // console.log(sum);
          average = sum/k;
+         // console.log(average);
          chartDataTemp[j] = +average.toFixed(3);
          if(unitConversion === sixMinsToWeek) {
             if(tempLabels[j+1] !== undefined) {
