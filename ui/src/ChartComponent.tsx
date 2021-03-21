@@ -9,135 +9,102 @@ const sixMinsToHours = 10;
 const sixMinsToDay = 240;
 const sixMinsToWeek = 1680; //(60mins/hour*24hours/day*7day/week)/(6mins)/week
 interface chartMetaData {
-   chartData: number[]
+   data: number[]
    labels: string[]
-   resolution?: string
-   normalorAverage?: string
+   resolution: string
+   normalorAverage: string
    threshold?: number
  }
 
-export default function ChartComponent(props: chartMetaData) {
-   let chartDataTemp: number[] = [];
-   let tempLabels: string[] = [];
-   let unitConversion: number = 0;
+   function setChartData(
+      unitConversion: number, 
+      chartData: number[], 
+      data: number[], 
+      chartLabels: string[], 
+      labels: string[]) {
+      let j = 0;
+      for(let i = 0; i < data.length; i = i + unitConversion){
+         chartData[j] = data[i]; 
+         chartLabels[j] = labels[i];
+         j++;
+      }
+   }
 
-   if(props.resolution === '6 mins') {
-      //default
-      chartDataTemp = props.chartData.slice(0);
-      tempLabels = props.labels.slice(0);
-   }
-   else if(props.resolution === '1 hour') {
-      unitConversion = sixMinsToHours;
+   function setChartDataForWeekNormal(
+      chartData: number[],
+      data: number[],
+      chartLabels: string[],
+      labels: string[]) {
       let j = 0;
-      for(let i = 0; i < props.chartData.length; i = i + unitConversion){
-         chartDataTemp[j] = props.chartData[i]; 
-         tempLabels[j] = props.labels[i];
-         j++;
-      }
-   }
-   else if(props.resolution === '1 day') {
-      unitConversion = sixMinsToDay;
-      let j = 0;
-      for(let i = 0; i < props.chartData.length; i = i + unitConversion){
-         chartDataTemp[j] = props.chartData[i]; 
-         tempLabels[j] = props.labels[i];
-         j++;
-      }
-   }
-   else if(props.resolution === '1 week' && props.normalorAverage === 'Normal') {
-      unitConversion = sixMinsToWeek;
-      let j = 0;
-      for(let i = 0; i < props.chartData.length; i = i + unitConversion) {
-            // console.log(props.labels.length);
-            // console.log(i);
-            chartDataTemp[j] = props.chartData[i];
-            tempLabels[j] = props.labels[i];
+      for(let i = 0; i < data.length; i = i + sixMinsToWeek) {
+            chartData[j] = data[i];
+            chartLabels[j] = labels[i];
             j++;
-         if(props.chartData.length - i <= unitConversion && props.chartData.length - i !== sixMinsToDay && props.chartData.length > sixMinsToWeek) {
-            i  = props.chartData.length - sixMinsToDay;
-            chartDataTemp[j] = props.chartData[i];
-            tempLabels[j] = props.labels[i];
-            i = props.chartData.length;
+         if(data.length - i <= sixMinsToWeek && data.length - i !== sixMinsToDay && data.length > sixMinsToWeek) {
+            i  = data.length - sixMinsToDay;
+            chartData[j] = data[i];
+            chartLabels[j] = labels[i];
+            i = data.length;
             j++;
          }
       }
    }
-   else if(props.resolution === '1 week' && props.normalorAverage === 'Average') {
-      unitConversion = sixMinsToWeek;
+
+   function setChartDataForWeekAverage(
+      chartData: number[],
+      data: number[]) {
       let sum: number = 0;
       let average: number = 0;
       let j = 0;
       let count = 0;
-      let newStartDate: string = '';
-      let numOfDays = props.chartData.length/sixMinsToDay;
-      console.log(numOfDays);
-      for(let i = 0; i < props.chartData.length; i++) {
+      let numOfDays = data.length/sixMinsToDay;
+      for(let i = 0; i < data.length; i++) {
          count++;
-         sum = sum + +props.chartData[i];
-         if(i % unitConversion === 0 && i !== 0) {
-            console.log("mod");
-            console.log(props.chartData.length);
-            console.log(i);
+         sum = sum + +data[i];
+         //if the loop has reached one week worth of data
+         if(i % sixMinsToWeek === 0 && i !== 0) {
             average = sum/count;
-            chartDataTemp[j] = +average.toFixed(3);
+            chartData[j] = +average.toFixed(3);
             sum = 0;
             count = 0;
             average = 0;
-            if(props.labels[i - sixMinsToWeek] !== undefined && props.labels[i - 1] !== undefined && props.labels[i]) {
-               tempLabels[j] = props.labels[i - sixMinsToWeek].split(" ")[0] + '--' + props.labels[i - 1].split(" ")[0];
-               newStartDate = props.labels[i].split(" ")[0];
-            }
             j++;
             numOfDays -= 7;
          }
+         //if we have equal to or less than a weeks worth of data
          else if(numOfDays <= 7) {
-            console.log("else");
-            console.log(props.chartData.length);
-            console.log(i);
-            while(i < props.chartData.length - 1) {
+            //get average of what is left
+            while(i < data.length - 1) {
                i++;
-               sum = sum + +props.chartData[i];
+               sum = sum + +data[i];
                count++;
             }
             average = sum/count;
-            console.log(+average.toFixed(3));
-            chartDataTemp[j] = +average.toFixed(3);
-            sum = 0;
-            count = 0;
-            average = 0;
-            if(tempLabels[j-1] !== undefined && props.labels[i - 1] !== undefined) {
-               tempLabels[j] = newStartDate + '--' + props.labels[i - 1].split(" ")[0];
-            }
-            console.log(i);
-            console.log(props.labels[0]);
-            console.log(props.labels[i - 1]);
-            if(props.chartData.length <= sixMinsToWeek && props.labels[0] !== undefined && props.labels[i - 1] !== undefined) {
-               tempLabels[j] = props.labels[0].split(" ")[0] + '---' + props.labels[i - 1].split(" ")[0];
-            }
-            i = props.chartData.length;
-            j++;
+            chartData[j] = +average.toFixed(3);
+            break;
          }
-      }
-      
+      }  
    }
 
-   if(props.normalorAverage === 'Normal' || props.resolution === '6 mins') {
-
-   }
-   else if(props.normalorAverage === 'Average' && props.resolution !== '6 mins' && props.resolution !== '1 week') {
+   function setAverage(
+      unitConversion: number,
+      chartData: number[],
+      data: number[],
+      chartLabels: string[],
+      labels: string[]) {
       let average: number = 0;
       let sum: number = 0;
       let j = 0;
-      for(let i = 0; i < props.chartData.length; ) {
+      for(let i = 0; i < data.length; ) {
          let k = 0;
-         for(; (k < unitConversion && (k+i) < props.chartData.length); k++){
-            sum = sum + +props.chartData[k + i];
+         for(; k < unitConversion; k++){
+            sum = sum + +data[k + i];
          }
          i = i + k;
          average = sum/k;
-         chartDataTemp[j] = +average.toFixed(3);
-         if(tempLabels[j] !== undefined) {
-            tempLabels[j] = tempLabels[j].split(" ")[0];
+         chartData[j] = +average.toFixed(3);
+         if(chartLabels[j] !== undefined) {
+            chartLabels[j] = chartLabels[j].split(" ")[0];
          }
          sum = 0;
          average = 0;
@@ -145,13 +112,64 @@ export default function ChartComponent(props: chartMetaData) {
       }
    }
 
+   function setLabelsForWeekAverage(
+   chartLabels: string[],
+   labels: string[],
+   numberOfDays: number) {
+      let j = 0;
+      let newStartDate: string = '';
+      
+      for(let i = sixMinsToWeek; i < numberOfDays*sixMinsToDay; i += sixMinsToWeek) {
+         if(labels[i - sixMinsToWeek] !== undefined && labels[i - 1] !== undefined && labels[i] !== undefined) {
+            chartLabels[j] = labels[i - sixMinsToWeek].split(" ")[0] + '--' + labels[i - 1].split(" ")[0];
+            newStartDate = labels[i].split(" ")[0];
+            j++;
+         }
+      }
+      if(labels[j - 1] !== undefined && labels[labels.length - 1] !== undefined) {
+         chartLabels[j] = newStartDate + '--' + labels[labels.length - 1].split(" ")[0];
+      }
+      if(numberOfDays*sixMinsToDay <= sixMinsToWeek && labels[0] !== undefined && labels[labels.length - 1] !== undefined) {
+         chartLabels[j] = labels[0].split(" ")[0] + '--' + labels[labels.length - 1].split(" ")[0];
+      }
+   }
+
+
+export default function ChartComponent(props: chartMetaData) {
+   let chartData: number[] = [];
+   let chartLabels: string[] = [];
+   let unitConversion: number = 0;
+
+   if(props.resolution === '6 mins') {
+      chartData = props.data.slice(0);
+      chartLabels = props.labels.slice(0);
+   }
+   else if(props.resolution === '1 hour') {
+      unitConversion = sixMinsToHours;
+      setChartData(unitConversion, chartData, props.data, chartLabels, props.labels);
+   }
+   else if(props.resolution === '1 day') {
+      unitConversion = sixMinsToDay;
+      setChartData(unitConversion, chartData, props.data, chartLabels, props.labels);
+   }
+   else if(props.resolution === '1 week' && props.normalorAverage === 'Normal') {
+      setChartDataForWeekNormal(chartData, props.data, chartLabels, props.labels);
+   }
+   else if(props.resolution === '1 week' && props.normalorAverage === 'Average') {
+      setChartDataForWeekAverage(chartData, props.data);
+      setLabelsForWeekAverage(chartLabels, props.labels, props.data.length/sixMinsToDay);
+   }
+
+   if(props.normalorAverage === 'Average' && (props.resolution === '1 day' || props.resolution === '1 hour')) {
+      setAverage(unitConversion, chartData, props.data, chartLabels, props.labels);
+   }
 
    const data = {
-      labels: tempLabels,
+      labels: chartLabels,
       datasets: [
          {
             label: 'Water Level Data',
-            data: chartDataTemp,
+            data: chartData,
             borderColor: ['rgba(32, 143, 217, 0.2)'],
             backgroundColor: ['rgba(32, 143, 217, 0.2)'],
             pointBackgroundColor: ['rgba(243, 241, 149, 0.2)'],
@@ -175,20 +193,6 @@ export default function ChartComponent(props: chartMetaData) {
         }]
       }     
     }
-   //  const annotation = {
-   //    annotations: [{
-   //       type: 'line',
-   //       mode: 'horizontal',
-   //       scaleID: 'y-axis-0',
-   //       value: 5,
-   //       borderColor: 'rgb(75, 192, 192)',
-   //       borderWidth: 4,
-   //       label: {
-   //         enabled: false,
-   //         content: 'Test label'
-   //       }
-   //     }]
-   //  }
    
    return (
      <Line data={data} options = {options}/>

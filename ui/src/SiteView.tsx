@@ -157,7 +157,7 @@ export default function SiteView(props: StationMetaData) {
         </div>
         </div>
         <div className = 'linechart'>
-          <ChartComponent chartData = {allWaterLevels} labels = {allWaterLevelDates} resolution = {chartResolution} normalorAverage = {normalorAverage}/>
+          <ChartComponent data = {allWaterLevels} labels = {allWaterLevelDates} resolution = {chartResolution} normalorAverage = {normalorAverage}/>
           <RadioGroup row aria-label="timeResolution" name="timeResolution" onChange = {(e)=> setChartResolution(e.target.value)} value = {chartResolution}>
             <FormControlLabel value="6 mins" control={<Radio />} label="6 mins" />
             <FormControlLabel value="1 hour" control={<Radio />} label="1 hour" />
