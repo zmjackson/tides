@@ -191,9 +191,9 @@ export default function ChartComponent(props: chartMetaData) {
               labelString: 'date'
            }
         }]
-      }     
+      },
+      elements: { point: { radius: 0, hitRadius: 10, hoverRadius: 5 } } 
     }
-   
    return (
      <Line data={data} options = {options}/>
    )
