@@ -5,7 +5,7 @@
     ],
     "service": "ui",
     "shutdownAction": "none",
-    "extensions": [],
+    "extensions": ["dbaeumer.vscode-eslint", "esbenp.prettier-vscode"],
     // Open the sub-folder with the source code
     "workspaceFolder": "/app"
 }
