@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef } from "react";
 
 type DetectOutsideClickProps = {
   onOutsideClick: () => void;
-  children: JSX.Element;
+  children: JSX.Element | JSX.Element[];
 };
 
 export default function DetectOutsideClick({

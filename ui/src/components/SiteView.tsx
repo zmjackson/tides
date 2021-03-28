@@ -12,15 +12,11 @@ import Paper from "@material-ui/core/Paper";
 
 import Dialog from "@material-ui/core/Dialog";
 import DialogTitle from "@material-ui/core/DialogTitle";
+import { StationMetaData } from "../types/Stations";
 
-interface StationMetaData {
-  readonly id: number;
-  readonly name: string;
-  readonly lat: number;
-  readonly lon: number;
-}
+type SiteViewProps = { station: StationMetaData };
 
-export function SiteView(props: StationMetaData) {
+export default function SiteView({ station }: SiteViewProps): JSX.Element {
   const [open, setOpen] = React.useState(false);
   const [startDate, setStartDate] = React.useState("1969-04-20");
   const [endDate, setEndDate] = React.useState("1969-04-20");
@@ -40,7 +36,7 @@ export function SiteView(props: StationMetaData) {
     console.log(startDate);
     console.log(endDate);
     console.log(parseFloat(floodThreshold));
-    console.log(props.id);
+    console.log(station.id);
 
     const startString = startDate.replace("-", "").replace("-", "");
     console.log(startString);
@@ -49,7 +45,7 @@ export function SiteView(props: StationMetaData) {
       "/getFloodLevelData/" +
         floodThreshold +
         "/" +
-        props.id +
+        station.id +
         "/" +
         startDate.replace("-", "").replace("-", "") +
         "/" +
@@ -83,7 +79,7 @@ export function SiteView(props: StationMetaData) {
   return (
     <div className="dialogSideBySide">
       <div className="dialogDiv">
-        <DialogTitle id="simple-dialog-title">{props.name}</DialogTitle>
+        <DialogTitle id="simple-dialog-title">{station.name}</DialogTitle>
         <form className={"hello"} noValidate>
           <TextField
             id="StartDate"
