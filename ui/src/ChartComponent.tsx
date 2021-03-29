@@ -63,22 +63,43 @@ interface chartMetaData {
             j++;
             if(data.length - i <= sixMinsToMonth && data.length - i !== sixMinsToDay && data.length > sixMinsToMonth) {
                i  = data.length - sixMinsToDay;
-               chartData[j] = data[i];
-               chartLabels[j] = labels[i];
+               chartData[j] = data[i - sixMinsToDay];
+               chartLabels[j] = labels[i - sixMinsToDay];
                i = data.length;
                j++;
             }
             
-            // if(labels[i] !== undefined) {
-            //    console.log(i);
-            //    console.log(labels[i]);
-            //    console.log(labels[i].split('-')[1]);
-            //    if(labels[i].split('-')[0] === '02') {
-            //       i = i + sixMinsToMonth - 3;
-            //    }
+            if(labels[i] !== undefined) {
+               console.log(i);
+               console.log(labels[i]);
+               console.log(labels[i].split('-')[1]);
+               if(labels[i].split('-')[1] === '02') {
+                  i = i + sixMinsToMonth - 2 * sixMinsToDay;
+               }
+               else if(labels[i].split('-')[1] === '01' || 
+                        labels[i].split('-')[1] === '03' || 
+                        labels[i].split('-')[1] === '05' || 
+                        labels[i].split('-')[1] === '07' || 
+                        labels[i].split('-')[1] === '08' || 
+                        labels[i].split('-')[1] === '10' ||
+                        labels[i].split('-')[1] === '12') {
+                           i = i + sixMinsToMonth;
+               }
+               else {
+                  i = i + sixMinsToMonth - sixMinsToDay;
+               }
+            }
             //    else {
-                  // if()
-                  i = i + sixMinsToMonth;
+                  // console.log(i)
+                  // console.log(sixMinsToMonth);
+                  // console.log(i/sixMinsToMonth);
+                  // if(i/sixMinsToMonth % 2 === 0 && i/sixMinsToMonth !== 0) {
+                  //    console.log('help')
+                  //    i = i + sixMinsToMonth - 1;
+                  // }
+                  // else {
+                     // i = i + sixMinsToMonth;
+                  // }
             //    }
             // }
          }
