@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { StationMetaData } from "../types/Stations";
-import RLDD, { RLDDItem } from "react-list-drag-and-drop/lib/RLDD";
-import SiteView from "../components/SiteView";
+import RLDD from "react-list-drag-and-drop/lib/RLDD";
+import SiteView from "./SiteView";
 import StyleSheet from "../types/StyleSheet";
 
 type DataViewProps = { station: StationMetaData };
@@ -22,7 +22,7 @@ function DataView({ station }: DataViewProps): JSX.Element {
   );
 }
 
-function RenderDataView(item: StationMetaData, index: number): JSX.Element {
+function RenderDataView(item: StationMetaData): JSX.Element {
   return <DataView station={item} />;
 }
 
@@ -51,7 +51,7 @@ export default function DataViewsContainer({
 
 const styles: StyleSheet = {
   dataViewContainer: {
-    border: "1px solid blue",
+    border: "1px solid lightblue",
     borderRadius: "10px",
     height: "100%",
     margin: "1em",
@@ -65,7 +65,7 @@ const styles: StyleSheet = {
   dataViewHeader: {
     backgroundColor: "lightblue",
     borderRadius: "10px 10px 0px 0px",
-    borderBottom: "1px solid blue",
+    borderBottom: "1px solid lightblue",
     padding: "1em",
   },
 };

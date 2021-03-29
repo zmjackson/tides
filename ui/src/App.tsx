@@ -2,8 +2,7 @@ import React, { useState, useEffect } from "react";
 import "./App.css";
 import { StationMetaData } from "./types/Stations";
 import { StationsDropdown } from "./components/StationsDropdown";
-import SiteView from "./components/SiteView";
-import StationDataView from "./components/StationDataView";
+import StationDataView from "./components/DataView";
 import StyleSheet from "./types/StyleSheet";
 
 const styles: StyleSheet = {

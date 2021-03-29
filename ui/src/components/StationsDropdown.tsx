@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { StationMetaData } from "../types/Stations";
-import DetectOutsideClick from "../components/DetectOutsideClick";
-import StationMap from "../components/Map";
+import DetectOutsideClick from "./DetectOutsideClick";
+import StationMap from "./Map";
 import StyleSheet from "../types/StyleSheet";
 
 type StationListingProps = {
@@ -15,10 +15,10 @@ const StationListing = ({
 }: StationListingProps): JSX.Element => (
   <li style={{ display: "flex", justifyContent: "space-between" }}>
     <p>
-      <span style={{ color: "white", marginRight: "0.5em" }}>
+      <span style={{ color: "white", marginRight: "0.5em", fontSize: "12px" }}>
         {station.name}
       </span>
-      <span style={{ color: "gray" }}>{station.id}</span>
+      <span style={{ color: "gray", fontSize: "12px" }}>{station.id}</span>
     </p>
     <button onClick={() => addStation({ ...station })}>+</button>
   </li>
@@ -58,8 +58,7 @@ const DropdownContent = ({
 
   return (
     <div>
-      <h3 style={{ color: "white" }}>Add Station</h3>
-      <br />
+      <h3 style={{ color: "white" }}>Stations</h3>
       <input
         type="text"
         placeholder="Search by name or ID..."
@@ -69,13 +68,14 @@ const DropdownContent = ({
         style={styles.searchBox}
       />
       <ul style={styles.stationList}>
-        {searchResults.map((station) => (
-          <StationListing
-            station={station}
-            addStation={addStation}
-            key={station.id}
-          />
-        ))}
+        {searchTerm.length > 0 &&
+          searchResults.map((station) => (
+            <StationListing
+              station={station}
+              addStation={addStation}
+              key={station.id}
+            />
+          ))}
       </ul>
     </div>
   );
@@ -105,7 +105,7 @@ const styles: StyleSheet = {
   stationList: {
     overflowY: "scroll",
     listStyle: "none",
-    maxHeight: "20rem",
+    maxHeight: "23em",
   },
   left: {
     flex: "1",
