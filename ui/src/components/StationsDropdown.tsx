@@ -90,18 +90,6 @@ const styles: StyleSheet = {
     padding: "5px",
     border: "1px solid #ffee57",
   },
-  drop: {
-    zIndex: 99,
-    maxHeight: "30em",
-    width: "70em",
-    position: "absolute",
-    top: "40px",
-    backgroundColor: "#132f3d",
-    borderRadius: "8px",
-    boxShadow: "0px 3px 10px 0px rgba(0,0,0,0.1)",
-    display: "flex",
-    flexDirection: "row",
-  },
   stationList: {
     overflowY: "scroll",
     listStyle: "none",
@@ -136,7 +124,7 @@ export const StationsDropdown = ({
       </button>
       {open && (
         <DetectOutsideClick onOutsideClick={() => setOpen(false)}>
-          <div style={styles.drop}>
+          <div className="stations-menu">
             <div style={styles.left}>
               <DropdownContent stations={stations} addStation={addStation} />
             </div>

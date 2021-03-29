@@ -9,7 +9,7 @@ const styles: StyleSheet = {
   topBar: {
     display: "flex",
     height: "3em",
-    backgroundColor: "#132f3d",
+    backgroundColor: "#216ba5",
     alignItems: "center",
   },
 };

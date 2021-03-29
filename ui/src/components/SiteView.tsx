@@ -1,33 +1,10 @@
 import React, { useState } from "react";
-import {
-  Button,
-  Checkbox,
-  Modal,
-  RadioGroup,
-  TextField,
-  FormControlLabel,
-  Radio,
-} from "@material-ui/core";
-import "leaflet/dist/leaflet.css";
-import "../App.css";
-import Table from "@material-ui/core/Table";
-import TableBody from "@material-ui/core/TableBody";
-import TableCell from "@material-ui/core/TableCell";
-import TableContainer from "@material-ui/core/TableContainer";
-import TableHead from "@material-ui/core/TableHead";
-import TableRow from "@material-ui/core/TableRow";
-import Paper from "@material-ui/core/Paper";
-
-import Dialog from "@material-ui/core/Dialog";
-import DialogTitle from "@material-ui/core/DialogTitle";
 import ChartComponent from "./Chart";
-
 import { StationMetaData } from "../types/Stations";
 
 type SiteViewProps = { station: StationMetaData };
 
 export default function SiteView({ station }: SiteViewProps): JSX.Element {
-  const [open, setOpen] = useState(false);
   const [startDate, setStartDate] = useState("2021-01-01");
   const [endDate, setEndDate] = useState("2021-01-02");
   const [floodThreshold, setFloodThreshold] = useState("0");
@@ -74,9 +51,6 @@ export default function SiteView({ station }: SiteViewProps): JSX.Element {
         floodList = res.data;
       })
       .then((res) => {
-        console.log(res);
-        console.log("this should have worked");
-
         rows = [];
         for (let i = 0; i < floodList.length; i++) {
           rows.push({
@@ -94,84 +68,6 @@ export default function SiteView({ station }: SiteViewProps): JSX.Element {
 
   return (
     <div>
-      <div className="dialogSideBySide">
-        <div className="dialogDiv">
-          <DialogTitle id="simple-dialog-title">{station.name}</DialogTitle>
-          <form className={"hello"} noValidate>
-            <TextField
-              id="StartDate"
-              label="Start Date"
-              type="date"
-              value={startDate}
-              onInput={(e) =>
-                setStartDate((e.target as HTMLInputElement).value)
-              }
-              InputLabelProps={{
-                shrink: true,
-              }}
-            />
-            <br />
-            <br />
-            <TextField
-              id="EndDateate"
-              label="End Date"
-              type="date"
-              value={endDate}
-              onInput={(e) => setEndDate((e.target as HTMLInputElement).value)}
-              InputLabelProps={{
-                shrink: true,
-              }}
-            />
-            <br />
-            <br />
-            <TextField
-              id="FloodThreshold"
-              label="Flood Threshold"
-              type="number"
-              value={floodThreshold}
-              onInput={(e) =>
-                setFloodThreshold((e.target as HTMLInputElement).value)
-              }
-              InputLabelProps={{
-                shrink: true,
-              }}
-            />
-            <br />
-            <br />
-            <Button variant="outlined" color="primary" onClick={handleSubmit}>
-              Get Data
-            </Button>
-          </form>
-          <br />
-          <strong>Number of Floods: {numFloods}</strong>
-        </div>
-        <div className="dialogDiv">
-          <TableContainer component={Paper}>
-            <Table size="small" aria-label="a dense table">
-              <TableHead>
-                <TableRow>
-                  <TableCell>StartDate</TableCell>
-                  <TableCell align="right">EndDate</TableCell>
-                  <TableCell align="right">Duration</TableCell>
-                  <TableCell align="right">Average</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {displayRows.map((displayRows) => (
-                  <TableRow key={displayRows.start}>
-                    <TableCell component="th" scope="row">
-                      {displayRows.start}
-                    </TableCell>
-                    <TableCell align="right">{displayRows.end}</TableCell>
-                    <TableCell align="right">{displayRows.duration}</TableCell>
-                    <TableCell align="right">{displayRows.average}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </div>
-      </div>
       <div className="linechart">
         <ChartComponent
           data={allWaterLevels}
@@ -179,35 +75,7 @@ export default function SiteView({ station }: SiteViewProps): JSX.Element {
           resolution={chartResolution}
           normalorAverage={normalorAverage}
         />
-        <RadioGroup
-          row
-          aria-label="timeResolution"
-          name="timeResolution"
-          onChange={(e) => setChartResolution(e.target.value)}
-          value={chartResolution}
-        >
-          <FormControlLabel value="6 mins" control={<Radio />} label="6 mins" />
-          <FormControlLabel value="1 hour" control={<Radio />} label="1 hour" />
-          <FormControlLabel value="1 day" control={<Radio />} label="1 day" />
-          <FormControlLabel value="1 week" control={<Radio />} label="1 week" />
-        </RadioGroup>
-        <RadioGroup
-          row
-          aria-label="NormalorAverage"
-          name="NormalorAverage"
-          onChange={(e) => setNormalorAverage(e.target.value)}
-          value={normalorAverage}
-        >
-          <FormControlLabel value="Normal" control={<Radio />} label="Normal" />
-          <FormControlLabel
-            value="Average"
-            control={<Radio />}
-            label="Average"
-          />
-        </RadioGroup>
       </div>
-      <br />
-      <br />
     </div>
   );
 }
