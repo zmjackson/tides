@@ -6,8 +6,9 @@ import { Line } from 'react-chartjs-2'
 // Chart.plugins.register([ChartAnnotation]); // Global
 
 const sixMinsToHours = 10;
-const sixMinsToDay = 240;
-const sixMinsToWeek = 1680; //(60mins/hour*24hours/day*7day/week)/(6mins)/week
+const sixMinsToDay = sixMinsToHours * 24;
+const sixMinsToWeek = sixMinsToDay * 7; //(60mins/hour*24hours/day*7day/week)/(6mins)/week
+const sixMinsToMonth = sixMinsToDay * 31;
 interface chartMetaData {
    data: number[]
    labels: string[]
@@ -49,6 +50,38 @@ interface chartMetaData {
          }
       }
    }
+
+   function setChartDataForMonthNormal(
+      chartData: number[],
+      data: number[],
+      chartLabels: string[],
+      labels: string[]) {
+         let j = 0;
+         for(let i = 0; i < data.length;) {
+               chartData[j] = data[i];
+               chartLabels[j] = labels[i];
+               j++;
+            if(data.length - i <= sixMinsToMonth && data.length - i !== sixMinsToDay && data.length > sixMinsToMonth) {
+               i  = data.length - sixMinsToDay;
+               chartData[j] = data[i];
+               chartLabels[j] = labels[i];
+               i = data.length;
+               j++;
+            }
+            
+            if(labels[i] !== undefined) {
+               console.log(i);
+               console.log(labels[i]);
+               console.log(labels[i].split('-')[1]);
+               if(labels[i].split('-')[0] === '02') {
+                  i = i + sixMinsToMonth - 3;
+               }
+               else {
+                  i = i + sixMinsToMonth;
+               }
+            }
+         }
+      }
 
    function setChartDataForWeekAverage(
       chartData: number[],
@@ -159,7 +192,9 @@ export default function ChartComponent(props: chartMetaData) {
       setChartDataForWeekAverage(chartData, props.data);
       setLabelsForWeekAverage(chartLabels, props.labels, props.data.length/sixMinsToDay);
    }
-
+   else if(props.resolution === '1 month' && props.normalorAverage === 'Normal') {
+      setChartDataForMonthNormal(chartData, props.data, chartLabels, props.labels);
+   }
    if(props.normalorAverage === 'Average' && (props.resolution === '1 day' || props.resolution === '1 hour')) {
       setAverage(unitConversion, chartData, props.data, chartLabels, props.labels);
    }
