@@ -58,9 +58,9 @@ interface chartMetaData {
       labels: string[]) {
          let j = 0;
          for(let i = 0; i < data.length;) {
-               chartData[j] = data[i];
-               chartLabels[j] = labels[i];
-               j++;
+            chartData[j] = data[i];
+            chartLabels[j] = labels[i];
+            j++;
             if(data.length - i <= sixMinsToMonth && data.length - i !== sixMinsToDay && data.length > sixMinsToMonth) {
                i  = data.length - sixMinsToDay;
                chartData[j] = data[i];
@@ -69,17 +69,18 @@ interface chartMetaData {
                j++;
             }
             
-            if(labels[i] !== undefined) {
-               console.log(i);
-               console.log(labels[i]);
-               console.log(labels[i].split('-')[1]);
-               if(labels[i].split('-')[0] === '02') {
-                  i = i + sixMinsToMonth - 3;
-               }
-               else {
+            // if(labels[i] !== undefined) {
+            //    console.log(i);
+            //    console.log(labels[i]);
+            //    console.log(labels[i].split('-')[1]);
+            //    if(labels[i].split('-')[0] === '02') {
+            //       i = i + sixMinsToMonth - 3;
+            //    }
+            //    else {
+                  // if()
                   i = i + sixMinsToMonth;
-               }
-            }
+            //    }
+            // }
          }
       }
 
