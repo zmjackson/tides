@@ -89,19 +89,6 @@ interface chartMetaData {
                   i = i + sixMinsToMonth - sixMinsToDay;
                }
             }
-            //    else {
-                  // console.log(i)
-                  // console.log(sixMinsToMonth);
-                  // console.log(i/sixMinsToMonth);
-                  // if(i/sixMinsToMonth % 2 === 0 && i/sixMinsToMonth !== 0) {
-                  //    console.log('help')
-                  //    i = i + sixMinsToMonth - 1;
-                  // }
-                  // else {
-                     // i = i + sixMinsToMonth;
-                  // }
-            //    }
-            // }
          }
       }
 
