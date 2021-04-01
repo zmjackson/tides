@@ -109,12 +109,16 @@ interface chartMetaData {
       let count = 0;
       let numOfDays = data.length/sixMinsToDay;
       for(let i = 0; i < data.length; i++) {
-         count++;
-         sum = sum + +data[i];
+         
          //if the loop has reached one week worth of data
-         if(i % sixMinsToWeek === 0 && i !== 0) {
+         if((i % sixMinsToWeek) === 0 && i !== 0) {
             average = sum/count;
             chartData[j] = +average.toFixed(3);
+            console.log("==================");
+            console.log("sum: " + sum);
+            console.log("count: " + count);
+            console.log("i: " + i);
+            console.log("average: " + average);
             sum = 0;
             count = 0;
             average = 0;
@@ -123,6 +127,8 @@ interface chartMetaData {
          }
          //if we have equal to or less than a weeks worth of data
          else if(numOfDays <= 7) {
+            count++;
+            sum = sum + +data[i];
             //get average of what is left
             while(i < data.length - 1) {
                i++;
@@ -130,9 +136,16 @@ interface chartMetaData {
                count++;
             }
             average = sum/count;
+            console.log("==================");
+            console.log("sum: " + sum);
+            console.log("count: " + count);
+            console.log("i: " + i);
+            console.log("average: " + average);
             chartData[j] = +average.toFixed(3);
             break;
          }
+         count++;
+         sum = sum + +data[i];
       }  
    }
 
@@ -222,6 +235,11 @@ interface chartMetaData {
          }
          i = i + k;
          average = sum/k;
+         console.log("==================");
+         console.log("sum: " + sum);
+         console.log("count: " + k);
+         console.log("i: " + i);
+         console.log("average: " + average);
          chartData[j] = +average.toFixed(3);
          if(chartLabels[j] !== undefined) {
             chartLabels[j] = chartLabels[j].split(" ")[0];
@@ -358,10 +376,10 @@ export default function ChartComponent(props: chartMetaData) {
    else if(props.resolution === '1 month' && props.normalorAverage === 'Normal') {
       setChartDataForMonthNormal(chartData, props.data, chartLabels, props.labels);
    }
-   else if(props.normalorAverage === 'Average' && (props.resolution === '1 day' || props.resolution === '1 hour')) {
+   if(props.normalorAverage === 'Average' && (props.resolution === '1 day' || props.resolution === '1 hour')) {
       setAverage(unitConversion, chartData, props.data, chartLabels, props.labels);
    }
-   else if(props.normalorAverage === 'Average' && props.resolution === '1 month') {
+   if(props.normalorAverage === 'Average' && props.resolution === '1 month') {
       setChartDataForMonthAverage(chartData, props.data, props.labels);
       setLabelsForMonthAverage(chartLabels, props.labels, props.data.length/sixMinsToDay);
    }
