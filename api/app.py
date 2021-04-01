@@ -112,6 +112,8 @@ def get_flood_level_data(flood_level, station_id, start_date, end_date):
                 date_range = date_range - 31
             else:
                 print(date_range)
+                if(date_range) == 0:
+                    break
                 end_date = (datetime.strptime(start_date, "%Y%m%d") + timedelta(days=date_range)).strftime("%Y%m%d")
                 date_range = 0
         print(start_date)
@@ -126,18 +128,19 @@ def get_flood_level_data(flood_level, station_id, start_date, end_date):
         f.close()
         resJson = res.json()
         index = 0
+        # update start date to be one past the end date
+        start_date = (datetime.strptime(end_date, "%Y%m%d") + timedelta(days=1)).strftime("%Y%m%d")
+        # date range decreased by one bc our start date uses one of the those days
+        if(date_range != 0):
+            date_range = date_range - 1
+
         try:
             resJson_length = len(resJson['data'])
-
-            # update start date to be one past the end date
-            start_date = (datetime.strptime(end_date, "%Y%m%d") + timedelta(days=1)).strftime("%Y%m%d")
-            # date range decreased by one bc our start date uses one of the those days
-            if(date_range != 0):
-                date_range = date_range - 1
 
             for resJson in resJson['data']:
                 if(resJson['v'] == ''):
                     # all_flood_levels.append(0)
+                    print("IGNORED")
                     all_water_level_dates.append(resJson['t'])
                 else:
                     index = (index + 1)
@@ -181,7 +184,7 @@ def get_flood_level_data(flood_level, station_id, start_date, end_date):
                         flood = {}
                         flood_started = False
         except KeyError:
-            print("big time error that's okay")
+            print("NO DATA AVAILABLE")
 
     # metadata
     metadata['num_of_floods'] = num_of_floods

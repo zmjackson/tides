@@ -70,11 +70,14 @@ interface chartMetaData {
             }
             
             if(labels[i] !== undefined) {
-               console.log(i);
-               console.log(labels[i]);
-               console.log(labels[i].split('-')[1]);
                if(labels[i].split('-')[1] === '02') {
-                  i = i + sixMinsToMonth - 2 * sixMinsToDay;
+                  console.log(labels[i].split('-')[0]);
+                  if(+labels[i].split('-')[0] % 4 === 0) { //leap year
+                     i = i + sixMinsToMonth - 2 * sixMinsToDay;
+                  }
+                  else {
+                     i = i + sixMinsToMonth - 3 * sixMinsToDay;
+                  }
                }
                else if(labels[i].split('-')[1] === '01' || 
                         labels[i].split('-')[1] === '03' || 
@@ -89,7 +92,12 @@ interface chartMetaData {
                   i = i + sixMinsToMonth - sixMinsToDay;
                }
             }
+            else {
+               i = i + sixMinsToMonth;
+            }
          }
+         chartData.pop();
+         chartLabels.pop();
       }
 
    function setChartDataForWeekAverage(
@@ -124,6 +132,76 @@ interface chartMetaData {
             average = sum/count;
             chartData[j] = +average.toFixed(3);
             break;
+         }
+      }  
+   }
+
+   function setChartDataForMonthAverage(
+      chartData: number[],
+      data: number[],
+      labels: string[]) {
+      let sum: number = 0;
+      let average: number = 0;
+      let j = 0;
+      let count = 0;
+      let numOfDays = data.length/sixMinsToDay;
+      for(let i = 0; i < data.length; i++) {
+         if(labels[i-1] !== undefined) {
+            count++;
+            sum = sum + +data[i];
+            if((i % sixMinsToMonth) === 0 && i !== 0 && 
+               (labels[i-1].split('-')[1] === '01' || 
+               labels[i-1].split('-')[1] === '03' || 
+               labels[i-1].split('-')[1] === '05' || 
+               labels[i-1].split('-')[1] === '07' || 
+               labels[i-1].split('-')[1] === '08' || 
+               labels[i-1].split('-')[1] === '10' ||
+               labels[i-1].split('-')[1] === '12')) {
+               
+               average = sum/count;
+               console.log("**********************");
+               console.log("sum: " + sum);
+               console.log("count: " + count);
+               console.log("i: " + i);
+               console.log("average: " + average);
+               chartData[j] = +average.toFixed(3);
+               sum = 0;
+               count = 0;
+               average = 0;
+               j++;
+               numOfDays -= 31;
+            }
+            else if((i % (sixMinsToMonth - sixMinsToDay)) === 0 && i !== 0 && 
+               (labels[i-1].split('-')[1] === '02' || 
+               labels[i-1].split('-')[1] === '04' || 
+               labels[i-1].split('-')[1] === '06' || 
+               labels[i-1].split('-')[1] === '09' || 
+               labels[i-1].split('-')[1] === '11')) {
+               average = sum/count;
+               console.log("==================");
+               console.log("sum: " + sum);
+               console.log("count: " + count);
+               console.log("i: " + i);
+               console.log("average: " + average);
+               chartData[j] = +average.toFixed(3);
+               sum = 0;
+               count = 0;
+               average = 0;
+               j++;
+               numOfDays -= 30;
+            }
+            //if we have equal to or less than a months worth of data
+            else if(numOfDays <= 31) {
+               //get average of what is left
+               while(i < data.length - 1) {
+                  i++;
+                  sum = sum + +data[i];
+                  count++;
+               }
+               average = sum/count;
+               chartData[j] = +average.toFixed(3);
+               break;
+            }
          }
       }  
    }
@@ -176,6 +254,82 @@ interface chartMetaData {
       }
    }
 
+   function setLabelsForMonthAverage(
+      chartLabels: string[],
+      labels: string[],
+      numberOfDays: number) {
+         let j = 0;
+         let newStartDate: string = '';
+         let i = 0;
+         if(labels[i] !== undefined) {
+            if(labels[i].split('-')[1] === '02') {
+               console.log(labels[i].split('-')[0]);
+               if(+labels[i].split('-')[0] % 4 === 0) { //leap year
+                  i = i + sixMinsToMonth - 2 * sixMinsToDay;
+               }
+               else {
+                  i = i + sixMinsToMonth - 3 * sixMinsToDay;
+               }
+            }
+            else if(labels[i].split('-')[1] === '01' || 
+                     labels[i].split('-')[1] === '03' || 
+                     labels[i].split('-')[1] === '05' || 
+                     labels[i].split('-')[1] === '07' || 
+                     labels[i].split('-')[1] === '08' || 
+                     labels[i].split('-')[1] === '10' ||
+                     labels[i].split('-')[1] === '12') {
+                        i = i + sixMinsToMonth;
+            }
+            else {
+               i = i + sixMinsToMonth - sixMinsToDay;
+            }
+         }
+
+         let lastAddedMonth = i;
+         for(; i < numberOfDays*sixMinsToDay;) {
+            if(labels[i - lastAddedMonth] !== undefined && labels[i - 1] !== undefined && labels[i] !== undefined) {
+               chartLabels[j] = labels[i - lastAddedMonth].split(" ")[0] + '--' + labels[i - 1].split(" ")[0];
+               newStartDate = labels[i].split(" ")[0];
+               j++;
+            }
+            if(labels[i] !== undefined) {
+               if(labels[i].split('-')[1] === '02') {
+                  console.log(labels[i].split('-')[0]);
+                  if(+labels[i].split('-')[0] % 4 === 0) { //leap year
+                     i = i + sixMinsToMonth - 2 * sixMinsToDay;
+                     lastAddedMonth = sixMinsToMonth - 2 * sixMinsToDay;
+                  }
+                  else {
+                     i = i + sixMinsToMonth - 3 * sixMinsToDay;
+                     lastAddedMonth = sixMinsToMonth - 3 * sixMinsToDay;
+                  }
+               }
+               else if(labels[i].split('-')[1] === '01' || 
+                        labels[i].split('-')[1] === '03' || 
+                        labels[i].split('-')[1] === '05' || 
+                        labels[i].split('-')[1] === '07' || 
+                        labels[i].split('-')[1] === '08' || 
+                        labels[i].split('-')[1] === '10' ||
+                        labels[i].split('-')[1] === '12') {
+                           i = i + sixMinsToMonth;
+                           lastAddedMonth = sixMinsToMonth;
+               }
+               else {
+                  i = i + sixMinsToMonth - sixMinsToDay;
+                  lastAddedMonth = sixMinsToMonth - sixMinsToDay;
+               }
+            }
+            else {
+               i = i + sixMinsToMonth;
+            }
+         }
+         if(labels[j - 1] !== undefined && labels[labels.length - 1] !== undefined) {
+            chartLabels[j] = newStartDate + '--' + labels[labels.length - 1].split(" ")[0];
+         }
+         if(numberOfDays*sixMinsToDay <= lastAddedMonth && labels[0] !== undefined && labels[labels.length - 1] !== undefined) {
+            chartLabels[j] = labels[0].split(" ")[0] + '--' + labels[labels.length - 1].split(" ")[0];
+         }
+      }
 
 export default function ChartComponent(props: chartMetaData) {
    let chartData: number[] = [];
@@ -204,8 +358,12 @@ export default function ChartComponent(props: chartMetaData) {
    else if(props.resolution === '1 month' && props.normalorAverage === 'Normal') {
       setChartDataForMonthNormal(chartData, props.data, chartLabels, props.labels);
    }
-   if(props.normalorAverage === 'Average' && (props.resolution === '1 day' || props.resolution === '1 hour')) {
+   else if(props.normalorAverage === 'Average' && (props.resolution === '1 day' || props.resolution === '1 hour')) {
       setAverage(unitConversion, chartData, props.data, chartLabels, props.labels);
+   }
+   else if(props.normalorAverage === 'Average' && props.resolution === '1 month') {
+      setChartDataForMonthAverage(chartData, props.data, props.labels);
+      setLabelsForMonthAverage(chartLabels, props.labels, props.data.length/sixMinsToDay);
    }
 
    const data = {
