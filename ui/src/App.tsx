@@ -3,16 +3,6 @@ import "./App.css";
 import { StationMetaData } from "./types/Stations";
 import { StationsDropdown } from "./components/StationsDropdown";
 import StationDataView from "./components/DataView";
-import StyleSheet from "./types/StyleSheet";
-
-const styles: StyleSheet = {
-  topBar: {
-    display: "flex",
-    height: "3em",
-    backgroundColor: "#216ba5",
-    alignItems: "center",
-  },
-};
 
 export default function App(): JSX.Element {
   const [metaData, setMetaData] = useState<StationMetaData[]>([]);
@@ -29,7 +19,7 @@ export default function App(): JSX.Element {
 
   return (
     <div className="App">
-      <div style={styles.topBar}>
+      <div className="top-ribbon">
         <StationsDropdown stations={metaData} addStation={addStation} />
       </div>
       <div>

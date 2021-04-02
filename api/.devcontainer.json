@@ -8,7 +8,7 @@
     // when you close a workspace
     "shutdownAction": "none",
     "extensions": [
-        "ms-python.python"
+        "ms-python.vscode-pylance"
     ],
     "workspaceFolder": "/app"
 }

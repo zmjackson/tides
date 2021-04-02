@@ -1,44 +1,65 @@
-import React, { useState } from "react";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
-import SiteView from "./SiteView";
+import React, { useState, useEffect } from "react";
 import { StationMetaData } from "../types/Stations";
+import { Granularity } from "./DataBlock";
+import { Line } from "react-chartjs-2";
 
-type DataBlockProps = { title: string; station: StationMetaData };
+export function BasicChart(
+  station: StationMetaData,
+  start: Date,
+  end: Date,
+  granularity: Granularity
+): JSX.Element {
+  const [labels, setLabels] = useState<string[]>([]);
+  const [levels, setLevels] = useState<number[]>([]);
 
-export function DataBlock({ title, station }: DataBlockProps): JSX.Element {
-  const [startDate, setStartDate] = useState<Date>(new Date());
-  const [endDate, setEndDate] = useState<Date>(new Date());
+  useEffect(() => {
+    fetch(
+      // prettier-ignore
+      `/basic_range?begin_date=${start.toISOString().replaceAll("-", "").split("T")[0]
+                  }&end_date=${end.toISOString().replaceAll("-", "").split("T")[0]
+                  }&station_id=${station.id
+                  }&product=${granularity}`
+    )
+      .then((res) => res.json())
+      .then((res) => {
+        setLabels(res["data"]["timestamps"]);
+        setLevels(res["data"]["levels"]);
+      });
+  }, []);
 
-  return (
-    <div className="data-block">
-      <div className="data-block-header">
-        <div>
-          <span className="text-primary-dark">{title}</span>
-        </div>
-        <div className="data-block-options">
-          <span>From</span>
-          <DatePicker
-            selected={startDate}
-            onChange={(date: Date) => setStartDate(date)}
-          />
-          <span>to</span>
-          <DatePicker
-            selected={endDate}
-            onChange={(date: Date) => setEndDate(date)}
-          />
-          <span>with granularity:</span>
-          <select name="granularity" id="granularity">
-            <option value="6 mins">6 mins</option>
-            <option value="1 hour">1 hour</option>
-            <option value="1 day">1 day</option>
-            <option value="1 week">1 week</option>
-          </select>
-        </div>
-      </div>
-      <div className="data-block-body">
-        <SiteView station={station} />
-      </div>
-    </div>
-  );
+  const data = {
+    labels: labels,
+    datasets: [
+      {
+        label: "Water Level Data",
+        data: levels,
+        borderColor: ["rgba(32, 143, 217, 0.2)"],
+        backgroundColor: ["rgba(32, 143, 217, 0.2)"],
+        pointBackgroundColor: ["rgba(243, 241, 149, 0.2)"],
+        pointBorderColor: ["rgba(243, 241, 149, 0.2)"],
+      },
+    ],
+  };
+  const options = {
+    scales: {
+      yAxes: [
+        {
+          scaleLabel: {
+            display: true,
+            labelString: "Water Level (ft)",
+          },
+        },
+      ],
+      xAxes: [
+        {
+          scaleLabel: {
+            display: true,
+            labelString: "date",
+          },
+        },
+      ],
+    },
+    elements: { point: { radius: 0, hitRadius: 10, hoverRadius: 5 } },
+  };
+  return <Line data={data} options={options} />;
 }

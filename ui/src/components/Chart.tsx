@@ -157,7 +157,7 @@ function setLabelsForWeekAverage(
   }
 }
 
-export default function ChartComponent(props: chartMetaData) {
+export default function ChartComponent(props: chartMetaData): JSX.Element {
   let chartData: number[] = [];
   let chartLabels: string[] = [];
   let unitConversion = 0;

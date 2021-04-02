@@ -15,10 +15,8 @@ const StationListing = ({
 }: StationListingProps): JSX.Element => (
   <li style={{ display: "flex", justifyContent: "space-between" }}>
     <p>
-      <span style={{ color: "white", marginRight: "0.5em", fontSize: "12px" }}>
-        {station.name}
-      </span>
-      <span style={{ color: "gray", fontSize: "12px" }}>{station.id}</span>
+      <span>{station.name}</span>
+      <span>{station.id}</span>
     </p>
     <button onClick={() => addStation({ ...station })}>+</button>
   </li>
@@ -57,15 +55,14 @@ const DropdownContent = ({
   };
 
   return (
-    <div>
-      <h3 style={{ color: "white" }}>Stations</h3>
+    <div className="station-search">
+      <h3>Stations</h3>
       <input
         type="text"
         placeholder="Search by name or ID..."
         value={searchTerm}
         onChange={updateSearchTerm}
         ref={searchBoxRef}
-        style={styles.searchBox}
       />
       <ul style={styles.stationList}>
         {searchTerm.length > 0 &&
@@ -82,14 +79,6 @@ const DropdownContent = ({
 };
 
 const styles: StyleSheet = {
-  dropBtn: {
-    width: "100px",
-    height: "30px",
-    backgroundColor: "#ffc800",
-    borderRadius: "4px",
-    padding: "5px",
-    border: "1px solid #ffee57",
-  },
   stationList: {
     overflowY: "scroll",
     listStyle: "none",
@@ -119,9 +108,9 @@ export const StationsDropdown = ({
 
   return (
     <div style={{ position: "relative" }}>
-      <button onClick={() => setOpen(!open)} style={styles.dropBtn}>
-        Add Station
-      </button>
+      <span onClick={() => setOpen(!open)} className="top-link">
+        Add Station {open ? "▲" : "▼"}
+      </span>
       {open && (
         <DetectOutsideClick onOutsideClick={() => setOpen(false)}>
           <div className="stations-menu">
