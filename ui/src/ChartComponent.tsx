@@ -169,8 +169,8 @@ interface chartMetaData {
                labels[i-1].split('-')[1] === '07' || 
                labels[i-1].split('-')[1] === '08' || 
                labels[i-1].split('-')[1] === '10' ||
-               labels[i-1].split('-')[1] === '12')) {
-               
+               labels[i-1].split('-')[1] === '12') && 
+               labels[i-1].split('-')[2].split(' ')[0] !== '01') {
                average = sum/count;
                console.log("**********************");
                console.log("sum: " + sum);

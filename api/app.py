@@ -142,6 +142,7 @@ def get_flood_level_data(flood_level, station_id, start_date, end_date):
                     # all_flood_levels.append(0)
                     print("IGNORED")
                     all_water_level_dates.append(resJson['t'])
+                    index = (index + 1)
                 else:
                     index = (index + 1)
                     all_flood_levels.append(resJson['v'])
