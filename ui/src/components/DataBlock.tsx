@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { StationMetaData } from "../types/Stations";
+import { BasicChart, Floods } from "./DataBlocks";
 
 export type Granularity =
   | "water_level"
@@ -9,17 +10,10 @@ export type Granularity =
   | "daily_mean"
   | "monthly_mean";
 
-type BlockContents = {
+type DataBlockProps = {
+  station: StationMetaData;
   title: string;
-  render: (
-    station: StationMetaData,
-    start: Date,
-    end: Date,
-    granularity: Granularity
-  ) => JSX.Element;
 };
-
-type DataBlockProps = { station: StationMetaData; contents: BlockContents };
 
 const yesterday = (): Date => {
   const today = new Date();
@@ -29,8 +23,8 @@ const yesterday = (): Date => {
 };
 
 export default function DataBlock({
-  contents,
   station,
+  title,
 }: DataBlockProps): JSX.Element {
   const [startDate, setStartDate] = useState<Date>(yesterday());
   const [endDate, setEndDate] = useState<Date>(new Date());
@@ -44,7 +38,7 @@ export default function DataBlock({
     <div className="data-block">
       <div className="data-block-header">
         <div>
-          <span className="text-primary-dark">{contents.title}</span>
+          <span className="text-primary-dark">{title}</span>
         </div>
         <div className="data-block-options">
           <span>From</span>
@@ -67,7 +61,18 @@ export default function DataBlock({
         </div>
       </div>
       <div className="data-block-body">
-        {contents.render(station, startDate, endDate, granularity)}
+        <BasicChart
+          station={station}
+          start={startDate}
+          end={endDate}
+          granularity={granularity}
+        />
+        <Floods
+          station={station}
+          start={startDate}
+          end={endDate}
+          granularity={granularity}
+        />
       </div>
     </div>
   );

@@ -18,11 +18,11 @@ export default function App(): JSX.Element {
     setCurrentStations([...currentStations, station]);
 
   return (
-    <div className="App">
+    <div className="box">
       <div className="top-ribbon">
         <StationsDropdown stations={metaData} addStation={addStation} />
       </div>
-      <div>
+      <div className="content">
         <StationDataView currentStations={currentStations} />
       </div>
     </div>
