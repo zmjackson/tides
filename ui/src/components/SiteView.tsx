@@ -13,7 +13,7 @@ export default function SiteView({ station }: SiteViewProps): JSX.Element {
   const [allWaterLevels, setAllWaterLevels] = useState([]);
   const [allWaterLevelDates, setAllWaterLevelDates] = useState([]);
   const [chartResolution, setChartResolution] = useState("6 mins");
-  const [normalorAverage, setNormalorAverage] = useState("Normal");
+  const [normalorAverage, setNormalorAverage] = useState("Average");
   //const [floodList, setFloodList] = React.useState([{"start_date": " ", "end_date": " ", "duration": " ", "average": " "}]);
   const [displayRows, setdisplayRows] = useState([
     { start: "", end: "", duration: "", average: "" },

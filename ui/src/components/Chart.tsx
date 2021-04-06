@@ -63,8 +63,6 @@ function setChartDataForWeekAverage(chartData: number[], data: number[]) {
   let count = 0;
   let numOfDays = data.length / sixMinsToDay;
   for (let i = 0; i < data.length; i++) {
-    count++;
-    sum = sum + +data[i];
     //if the loop has reached one week worth of data
     if (i % sixMinsToWeek === 0 && i !== 0) {
       average = sum / count;
@@ -77,6 +75,8 @@ function setChartDataForWeekAverage(chartData: number[], data: number[]) {
     }
     //if we have equal to or less than a weeks worth of data
     else if (numOfDays <= 7) {
+      count++;
+      sum = sum + +data[i];
       //get average of what is left
       while (i < data.length - 1) {
         i++;
@@ -87,6 +87,8 @@ function setChartDataForWeekAverage(chartData: number[], data: number[]) {
       chartData[j] = +average.toFixed(3);
       break;
     }
+    count++;
+    sum = sum + +data[i];
   }
 }
 
@@ -94,8 +96,7 @@ function setAverage(
   unitConversion: number,
   chartData: number[],
   data: number[],
-  chartLabels: string[],
-  labels: string[]
+  chartLabels: string[]
 ) {
   let average = 0;
   let sum = 0;
@@ -208,8 +209,7 @@ export default function ChartComponent(props: chartMetaData): JSX.Element {
       unitConversion,
       chartData,
       props.data,
-      chartLabels,
-      props.labels
+      chartLabels
     );
   }
 
