@@ -1,66 +1,149 @@
-.App {
-  text-align: center;
+/* Global */
+
+html * {
+  font-size: 12px;
+  color: #464c4f;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+/* html,
+body {
+  height: 100%;
+  margin: 0;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+.box {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  flex-flow: column;
+  height: 100%;
 }
 
-.App-link {
-  color: #61dafb;
+.box .row {
+  border: 1px dotted grey;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.box .row.header {
+  flex: 0 1 auto;
+}
+
+.box .row.content {
+  display: flex;
+  flex-flow: column;
+  flex: 1 1 auto;
+  overflow-y: auto;
+}
+
+.box .row.footer {
+  flex: 0 1 40px;
+} */
+
+.text-primary-dark {
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.text-secondary-dark {
+  color: #9fa1a2;
 }
 
 .leaflet-container {
-  height: 800px;
+  height: 40em;
 }
+
+/* Map */
 
 .station-icon {
-  background: white;
+  background: #ffc800;
   border-radius: 50%;
-  box-shadow: 0px 0px 10px black;
 }
 
-.station-icon:after {
+/* .station-icon:after {
   display: block;
   width: 30px;
   height: 30px;
   content: "🌊";
   font-size: 20px;
+} */
+
+/* Top Ribbon */
+
+.top-ribbon {
+  display: flex;
+  height: 3em;
+  border-bottom: 1px solid #d7dbdb;
+  align-items: center;
 }
 
-.dialogSideBySide {
+.top-link {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+/* Station Menu */
+
+.stations-menu {
+  z-index: 99;
+  max-height: fit-content;
+  width: 70em;
+  position: absolute;
+  top: 40px;
+  background-color: white;
+  border-radius: 3px;
+  box-shadow: 0px 3px 10px 0px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: row;
-  justify-content: space-around;
 }
 
-.dialogDiv {
-  padding: 5%;
+.stations-menu input {
+  background-color: #f2f2f2;
+  border: 1px solid #d7dbdb;
+  padding: 6px;
+  border-radius: 3px;
+}
+
+.station-search {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Data View */
+
+.data-views-container {
+  display: flex;
+  justify-content: space-evenly;
+}
+
+.data-view {
+  flex-grow: 100;
+  border: 1px solid #d7dbdb;
+  border-radius: 3px;
+  margin: 1em;
+  background-color: #f4f6f6;
+  max-width: 50%;
+}
+
+.data-view-header {
+  display: flex;
+  justify-content: center;
+  padding: 1em;
+  background-color: white;
+  border-radius: 3px 3px 0px 0px;
+}
+
+.data-block {
+  border-radius: 3px;
+  background-color: white;
+  box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.13);
+  margin: 1em;
+}
+
+.data-block-header {
+  padding: 1em;
+}
+
+.data-block-options {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 1em;
+  font-weight: 500;
 }
