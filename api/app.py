@@ -95,6 +95,7 @@ def request_basic_range(
             ]
         )
     )
+    print(req, flush=True)
     return get(req)
 
 
@@ -203,14 +204,18 @@ def update_date_range(number_of_requests, date_range, start_date, end_date):
             else:
                 end_date = (datetime.strptime(start_date, "%Y%m%d") + timedelta(days=date_range)).strftime("%Y%m%d")
                 date_range = 0
+    if(date_range != 0):
+        date_range = date_range - 1
 
     return date_range, end_date 
+
 
 def get_duration(start_date, end_date):
     start_time = datetime.strptime(start_date, "%Y-%m-%d %H:%M")
     end_time = datetime.strptime(end_date, "%Y-%m-%d %H:%M")
     time_delta = str(abs(end_time - start_time))
     return time_delta
+
 
 def get_average(array):
     sum = 0
@@ -232,54 +237,45 @@ def get_flood_level_data():
  
     number_of_requests, date_range = get_num_of_req_and_date_range(start_date, end_date)
 
+    flood_started = False
+    flood_collection_data_json = {}
     flood = {}
     flood_levels = []
     flood_collection = []
-    flood_collection_data_json = {}
-    flood_started = False
-    num_of_floods = 0
     metadata = {}
+    num_of_floods = 0
     all_flood_levels = []
     all_water_level_dates = []
+    missing_water_level_dates = []
 
     for x in range(number_of_requests):
-        # add 31 days to start date if more than one request
         if(date_range == 0):
             break
         else:
             date_range, end_date = update_date_range(number_of_requests, date_range, start_date, end_date)
-        print(start_date)
-        print(end_date)
 
-        res = request_basic_range(start_date, end_date, station_id, product)
-        resJson = res.json()
+        resJson = request_basic_range(start_date, end_date, station_id, product).json()
 
         index = 0
-        # update start date to be one past the end date
-        start_date = (datetime.strptime(end_date, "%Y%m%d") + timedelta(days=1)).strftime("%Y%m%d")
-        # date range decreased by one bc our start date uses one of the those days
-        if(date_range != 0):
-            date_range = date_range - 1
 
         try:
-            resJson_length = len(resJson['data'])
+            num_of_datapoints = len(resJson['data'])
 
             for resJson in resJson['data']:
                 index = (index + 1)
+                all_water_level_dates.append(resJson['t'])
                 if(resJson['v'] == ''):
-                    # all_flood_levels.append(0)
                     print("IGNORED")
-                    all_water_level_dates.append(resJson['t'])
+                    missing_water_level_dates.append(resJson['t'])
                 else:
                     all_flood_levels.append(resJson['v'])
-                    all_water_level_dates.append(resJson['t'])
-                    # print(resJson['v'])
                     if(float(resJson['v']) >= float(flood_level)):
                         if(flood_started == False):
                             flood['start_date'] = resJson['t']
+                            flood_started = True
                         flood_levels.append(resJson['v'])
-                        flood_started = True
-                    if((float(resJson['v']) < float(flood_level) and flood_started) or (index == resJson_length and flood_started == True and x == number_of_requests - 1)):
+                        
+                    elif((float(resJson['v']) < float(flood_level) and flood_started) or (index == num_of_datapoints and flood_started == True and x == number_of_requests - 1)):
                         # get end date
                         flood['end_date'] = resJson['t']
 
@@ -301,7 +297,11 @@ def get_flood_level_data():
                         flood = {}
                         flood_started = False
         except KeyError:
+            missing_water_level_dates.append(start_date + end_date)
             print("NO DATA AVAILABLE")
+
+        # update start date to be one past the end date
+        start_date = (datetime.strptime(end_date, "%Y%m%d") + timedelta(days=1)).strftime("%Y%m%d")
 
     # metadata
     metadata['num_of_floods'] = num_of_floods
@@ -310,7 +310,7 @@ def get_flood_level_data():
     metadata['overall_average'] = "{:.3f}".format(get_average(all_flood_levels))
     metadata['all_water_levels'] = all_flood_levels
     metadata['all_water_level_dates'] = all_water_level_dates
-
+    metadata['missing_water_level_dates'] = missing_water_level_dates
     # store data in json
     flood_collection_data_json['data'] = flood_collection
     flood_collection_data_json['metadata'] = metadata
