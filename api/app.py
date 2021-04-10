@@ -146,8 +146,9 @@ def get_basic_range():
 
     res = request_basic_range(begin, end, id, product)
 
-    if res.status_code != 200 or "data" not in res.json():
-        return res.content, res.status_code, res.headers.items()
+    if res.status_code != 200 or res.status_code == 400 or "data" not in res.json():
+        # return res.content, res.status_code, res.headers.items()
+        return {"data": {"timestamps": ["0"], "levels": ["0"]}}
 
     timestamps, levels, _ = data_from_response(res)
 
@@ -169,8 +170,9 @@ def get_floods():
 
     res = request_basic_range(begin, end, id, product)
 
-    if res.status_code != 200 or "data" not in res.json():
-        return res.content, res.status_code, res.headers.items()
+    if res.status_code != 200 or res.status_code == 400 or "data" not in res.json():
+        # return res.content, res.status_code, res.headers.items()
+        return {"data": ["0"]}
 
     timestamps, levels, _ = data_from_response(res)
     return {
@@ -220,6 +222,9 @@ def get_duration(start_date, end_date):
 def get_average(array):
     sum = 0
     average = 0
+    if len(array) == 0:
+        return 0
+
     for values in array:
         sum = sum + float(values)
 
@@ -233,7 +238,7 @@ def get_flood_level_data():
     end_date = request.args["end_date"]
     station_id = request.args["station_id"]
     flood_level = request.args["floodThreshold"]
-    product = "water_level"
+    product = request.args["product"]
  
     number_of_requests, date_range = get_num_of_req_and_date_range(start_date, end_date)
 
@@ -253,56 +258,58 @@ def get_flood_level_data():
             break
         else:
             date_range, end_date = update_date_range(number_of_requests, date_range, start_date, end_date)
-
-        resJson = request_basic_range(start_date, end_date, station_id, product).json()
-
-        index = 0
-
+        
         try:
-            num_of_datapoints = len(resJson['data'])
+            resJson = request_basic_range(start_date, end_date, station_id, product).json()
 
-            for resJson in resJson['data']:
-                index = (index + 1)
-                all_water_level_dates.append(resJson['t'])
-                if(resJson['v'] == ''):
-                    print("IGNORED")
-                    missing_water_level_dates.append(resJson['t'])
-                else:
-                    all_flood_levels.append(resJson['v'])
-                    if(float(resJson['v']) >= float(flood_level)):
-                        if(flood_started == False):
-                            flood['start_date'] = resJson['t']
-                            flood_started = True
-                        flood_levels.append(resJson['v'])
-                        
-                    elif((float(resJson['v']) < float(flood_level) and flood_started) or (index == num_of_datapoints and flood_started == True and x == number_of_requests - 1)):
-                        # get end date
-                        flood['end_date'] = resJson['t']
+            index = 0
+            
+            try:
+                num_of_datapoints = len(resJson['data'])
 
-                        flood['duration'] = get_duration(flood["start_date"], flood["end_date"])
+                for resJson in resJson['data']:
+                    index = (index + 1)
+                    all_water_level_dates.append(resJson['t'])
+                    if(resJson['v'] == ''):
+                        print("IGNORED")
+                        missing_water_level_dates.append(resJson['t'])
+                    else:
+                        all_flood_levels.append(resJson['v'])
+                        if(float(resJson['v']) >= float(flood_level)):
+                            if(flood_started == False):
+                                flood['start_date'] = resJson['t']
+                                flood_started = True
+                            flood_levels.append(resJson['v'])
+                            
+                        elif((float(resJson['v']) < float(flood_level) and flood_started) or (index == num_of_datapoints and flood_started == True and x == number_of_requests - 1)):
+                            # get end date
+                            flood['end_date'] = resJson['t']
 
-                        # increment number of floods
-                        num_of_floods = num_of_floods + 1
+                            flood['duration'] = get_duration(flood["start_date"], flood["end_date"])
 
-                        flood['average'] = "{:.3f}".format(get_average(flood_levels))
-                        
-                        # Store flood levels
-                        flood['flood_levels'] = flood_levels
+                            # increment number of floods
+                            num_of_floods = num_of_floods + 1
 
-                        # store flood data
-                        flood_collection.append(flood)
+                            flood['average'] = "{:.3f}".format(get_average(flood_levels))
+                            
+                            # Store flood levels
+                            flood['flood_levels'] = flood_levels
 
-                        # reset values
-                        flood_levels = []
-                        flood = {}
-                        flood_started = False
-        except KeyError:
-            missing_water_level_dates.append(start_date + end_date)
-            print("NO DATA AVAILABLE")
+                            # store flood data
+                            flood_collection.append(flood)
 
-        # update start date to be one past the end date
+                            # reset values
+                            flood_levels = []
+                            flood = {}
+                            flood_started = False
+            except KeyError:
+                missing_water_level_dates.append(start_date + "-" +  end_date)
+                print("NO DATA AVAILABLE")
+        except:
+            missing_water_level_dates.append(start_date + "-" + end_date)
+
+        # update start date to be one past the end date 
         start_date = (datetime.strptime(end_date, "%Y%m%d") + timedelta(days=1)).strftime("%Y%m%d")
-
     # metadata
     metadata['num_of_floods'] = num_of_floods
 

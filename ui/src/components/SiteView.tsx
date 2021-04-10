@@ -40,7 +40,9 @@ export default function SiteView({ station }: SiteViewProps): JSX.Element {
         "start_date=" +
         startDate.replace("-", "").replace("-", "") +
         "end_date=" +
-        endDate.replace("-", "").replace("-", "")
+        endDate.replace("-", "").replace("-", "") +
+        "product=" +
+        "water_level"
     )
       .then((res) => res.json())
       .then((res) => {
