@@ -310,6 +310,7 @@ def get_flood_level_data():
 
         # update start date to be one past the end date 
         start_date = (datetime.strptime(end_date, "%Y%m%d") + timedelta(days=1)).strftime("%Y%m%d")
+        
     # metadata
     metadata['num_of_floods'] = num_of_floods
 
