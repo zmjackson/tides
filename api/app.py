@@ -95,6 +95,7 @@ def request_basic_range(
             ]
         )
     )
+    print(req, flush=True)
     return get(req)
 
 
@@ -102,12 +103,14 @@ def data_from_response(response: Response):
     json_data = response.json()["data"]
 
     timestamps = np.zeros(len(json_data), dtype="datetime64[m]")
-    levels = sigmas = np.zeros(len(json_data))
+    levels = np.zeros(len(json_data))
+    sigmas = np.zeros(len(json_data))
 
     for (i, data_point) in enumerate(json_data):
         timestamps[i] = data_point["t"]
         levels[i] = data_point["v"]
-        sigmas[i] = data_point["s"]
+        if(data_point["s"] != ''):
+            sigmas[i] = data_point["s"]
 
     return timestamps, levels, sigmas
 
@@ -143,8 +146,9 @@ def get_basic_range():
 
     res = request_basic_range(begin, end, id, product)
 
-    if res.status_code != 200 or "data" not in res.json():
-        return res.content, res.status_code, res.headers.items()
+    if res.status_code != 200 or res.status_code == 400 or "data" not in res.json():
+        # return res.content, res.status_code, res.headers.items()
+        return {"data": {"timestamps": ["0"], "levels": ["0"]}}
 
     timestamps, levels, _ = data_from_response(res)
 
@@ -166,33 +170,21 @@ def get_floods():
 
     res = request_basic_range(begin, end, id, product)
 
-    if res.status_code != 200 or "data" not in res.json():
-        return res.content, res.status_code, res.headers.items()
+    if res.status_code != 200 or res.status_code == 400 or "data" not in res.json():
+        # return res.content, res.status_code, res.headers.items()
+        return {"data": ["0"]}
 
     timestamps, levels, _ = data_from_response(res)
-
     return {
         "data": list(
-            np.datetime_as_string(timestamps[np.where(levels > float(threshold))])
-        )
+                np.datetime_as_string(timestamps[np.where(levels > float(threshold))])
+                )
     }
 
 
-@app.route("/getFloodLevelData/<flood_level>/<station_id>/<start_date>/<end_date>")
-def get_flood_level_data(flood_level, station_id, start_date, end_date):
-    server = "https://api.tidesandcurrents.noaa.gov/api/prod/datagetter"
-    start_date = start_date
-    end_date = end_date
-    station_id = station_id
-    product = "water_level"
-    datum = "STND"
-    units = "english"
-    time_zone = "gmt"
-    application = "uf_tides"
-    res_format = "json"
-
+def get_num_of_req_and_date_range(start_date, end_date):
     number_of_requests = 1
-    # parse through date_range and divide into
+    # parse through date_range and divide into 
     # multiple requests if date range is greater than 31 days
     start_time = datetime.strptime(start_date, "%Y%m%d")
     end_time = datetime.strptime(end_date, "%Y%m%d")
@@ -200,124 +192,136 @@ def get_flood_level_data(flood_level, station_id, start_date, end_date):
 
     date_range = int(date_range_string.split(" ")[0])
 
-    if date_range > 31:
+    if(date_range > 31):
         number_of_requests = math.ceil(date_range / 31)
 
+    return number_of_requests, date_range
+
+
+def update_date_range(number_of_requests, date_range, start_date, end_date):
+    if(number_of_requests > 1):
+            if(date_range > 31):
+                end_date = (datetime.strptime(start_date, "%Y%m%d") + timedelta(days=31)).strftime("%Y%m%d")
+                date_range = date_range - 31
+            else:
+                end_date = (datetime.strptime(start_date, "%Y%m%d") + timedelta(days=date_range)).strftime("%Y%m%d")
+                date_range = 0
+    if(date_range != 0):
+        date_range = date_range - 1
+
+    return date_range, end_date 
+
+
+def get_duration(start_date, end_date):
+    start_time = datetime.strptime(start_date, "%Y-%m-%d %H:%M")
+    end_time = datetime.strptime(end_date, "%Y-%m-%d %H:%M")
+    time_delta = str(abs(end_time - start_time))
+    return time_delta
+
+
+def get_average(array):
+    sum = 0
+    average = 0
+    if len(array) == 0:
+        return 0
+
+    for values in array:
+        sum = sum + float(values)
+
+    average = sum/len(array)
+    return average
+
+
+@app.route("/getFloodLevelData")
+def get_flood_level_data():
+    start_date = request.args["start_date"]
+    end_date = request.args["end_date"]
+    station_id = request.args["station_id"]
+    flood_level = request.args["floodThreshold"]
+    product = request.args["product"]
+ 
+    number_of_requests, date_range = get_num_of_req_and_date_range(start_date, end_date)
+
+    flood_started = False
+    flood_collection_data_json = {}
     flood = {}
     flood_levels = []
     flood_collection = []
-    flood_collection_data_json = {}
-    flood_started = False
-    num_of_floods = 0
     metadata = {}
+    num_of_floods = 0
     all_flood_levels = []
+    all_water_level_dates = []
+    missing_water_level_dates = []
 
     for x in range(number_of_requests):
-        # add 31 days to start date if more than one request
-        if number_of_requests > 1:
-            if date_range > 31:
-                end_date = (
-                    datetime.strptime(start_date, "%Y%m%d") + timedelta(days=31)
-                ).strftime("%Y%m%d")
-                date_range = date_range - 31
-            else:
-                end_date = (
-                    datetime.strptime(start_date, "%Y%m%d") + timedelta(days=date_range)
-                ).strftime("%Y%m%d")
-                date_range = 0
-        req = (
-            server
-            + "?"
-            + "&".join(
-                [
-                    "begin_date=" + start_date,
-                    "end_date=" + end_date,
-                    "station=" + station_id,
-                    "product=" + product,
-                    "datum=" + datum,
-                    "units=" + units,
-                    "time_zone=" + time_zone,
-                    "application=" + application,
-                    "format=" + res_format,
-                ]
-            )
-        )
-        print(req, flush=True)
-        res = get(req)
+        if(date_range == 0):
+            break
+        else:
+            date_range, end_date = update_date_range(number_of_requests, date_range, start_date, end_date)
+        
+        try:
+            resJson = request_basic_range(start_date, end_date, station_id, product).json()
 
-        resJson = res.json()
-        index = 0
-        resJson_length = len(resJson["data"])
+            index = 0
+            
+            try:
+                num_of_datapoints = len(resJson['data'])
 
-        # update start date to be one past the end date
-        start_date = (
-            datetime.strptime(end_date, "%Y%m%d") + timedelta(days=1)
-        ).strftime("%Y%m%d")
-        # date range decreased by one bc our start date uses one of the those days
-        date_range = date_range - 1
+                for resJson in resJson['data']:
+                    index = (index + 1)
+                    all_water_level_dates.append(resJson['t'])
+                    if(resJson['v'] == ''):
+                        print("IGNORED")
+                        missing_water_level_dates.append(resJson['t'])
+                    else:
+                        all_flood_levels.append(resJson['v'])
+                        if(float(resJson['v']) >= float(flood_level)):
+                            if(flood_started == False):
+                                flood['start_date'] = resJson['t']
+                                flood_started = True
+                            flood_levels.append(resJson['v'])
+                            
+                        elif((float(resJson['v']) < float(flood_level) and flood_started) or (index == num_of_datapoints and flood_started == True and x == number_of_requests - 1)):
+                            # get end date
+                            flood['end_date'] = resJson['t']
 
-        for resJson in resJson["data"]:
-            index = index + 1
-            all_flood_levels.append(resJson["v"])
-            # print(resJson['v'])
-            if float(resJson["v"]) >= float(flood_level):
-                if flood_started == False:
-                    flood["start_date"] = resJson["t"]
-                flood_levels.append(resJson["v"])
-                flood_started = True
-            if (float(resJson["v"]) < float(flood_level) and flood_started) or (
-                index == resJson_length
-                and flood_started == True
-                and x == number_of_requests - 1
-            ):
-                # get end date
-                flood["end_date"] = resJson["t"]
+                            flood['duration'] = get_duration(flood["start_date"], flood["end_date"])
 
-                # get duration
-                start_time = datetime.strptime(flood["start_date"], "%Y-%m-%d %H:%M")
-                end_time = datetime.strptime(flood["end_date"], "%Y-%m-%d %H:%M")
-                time_delta = str(abs(end_time - start_time))
-                flood["duration"] = time_delta
+                            # increment number of floods
+                            num_of_floods = num_of_floods + 1
 
-                # increment number of floods
-                num_of_floods = num_of_floods + 1
+                            flood['average'] = "{:.3f}".format(get_average(flood_levels))
+                            
+                            # Store flood levels
+                            flood['flood_levels'] = flood_levels
 
-                # get average of flood levels
-                sum = 0
-                for values in flood_levels:
-                    sum = sum + float(values)
+                            # store flood data
+                            flood_collection.append(flood)
 
-                average = sum / len(flood_levels)
-                flood["average"] = "{:.3f}".format(average)
+                            # reset values
+                            flood_levels = []
+                            flood = {}
+                            flood_started = False
+            except KeyError:
+                missing_water_level_dates.append(start_date + "-" +  end_date)
+                print("NO DATA AVAILABLE")
+        except:
+            missing_water_level_dates.append(start_date + "-" + end_date)
 
-                # Store flood levels
-                flood["flood_levels"] = flood_levels
-
-                # store flood data
-                flood_collection.append(flood)
-
-                # reset values
-                flood_levels = []
-                flood = {}
-                flood_started = False
-
+        # update start date to be one past the end date 
+        start_date = (datetime.strptime(end_date, "%Y%m%d") + timedelta(days=1)).strftime("%Y%m%d")
+        
     # metadata
-    metadata["num_of_floods"] = num_of_floods
-
-    sum = 0
-    for values in all_flood_levels:
-        sum = sum + float(values)
-
-    average = 0
-    if len(all_flood_levels) > 0:
-        average = sum / len(all_flood_levels)
+    metadata['num_of_floods'] = num_of_floods
 
     # overall average of all water levels
-    metadata["overall_average"] = "{:.3f}".format(average)
-
+    metadata['overall_average'] = "{:.3f}".format(get_average(all_flood_levels))
+    metadata['all_water_levels'] = all_flood_levels
+    metadata['all_water_level_dates'] = all_water_level_dates
+    metadata['missing_water_level_dates'] = missing_water_level_dates
     # store data in json
-    flood_collection_data_json["data"] = flood_collection
-    flood_collection_data_json["metadata"] = metadata
+    flood_collection_data_json['data'] = flood_collection
+    flood_collection_data_json['metadata'] = metadata
 
     ret = json.dumps(flood_collection_data_json)
     return ret

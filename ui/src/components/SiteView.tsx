@@ -33,14 +33,16 @@ export default function SiteView({ station }: SiteViewProps): JSX.Element {
     console.log(startString);
 
     fetch(
-      "/getFloodLevelData/" +
+      "/getFloodLevelData?floodThreshold=" +
         floodThreshold +
-        "/" +
+        "&station_id=" +
         station.id +
-        "/" +
+        "&start_date=" +
         startDate.replace("-", "").replace("-", "") +
-        "/" +
-        endDate.replace("-", "").replace("-", "")
+        "&end_date=" +
+        endDate.replace("-", "").replace("-", "") +
+        "&product=" +
+        "water_level"
     )
       .then((res) => res.json())
       .then((res) => {
