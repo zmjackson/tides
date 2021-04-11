@@ -1,6 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { StationMetaData } from "../types/Stations";
 import { Granularity } from "./DataBlock";
+import Table from '@material-ui/core/Table';
+import TableBody from '@material-ui/core/TableBody';
+import TableCell from '@material-ui/core/TableCell';
+import TableContainer from '@material-ui/core/TableContainer';
+import TableHead from '@material-ui/core/TableHead';
+import TableRow from '@material-ui/core/TableRow';
+import Paper from '@material-ui/core/Paper';
+
 import { Line } from "react-chartjs-2";
 
 type BasicChartProps = {
@@ -18,6 +26,7 @@ export function BasicChart({
 }: BasicChartProps): JSX.Element {
   const [labels, setLabels] = useState<string[]>([]);
   const [levels, setLevels] = useState<number[]>([]);
+  
 
   useEffect(() => {
     fetch(
@@ -85,7 +94,10 @@ export function Floods({
 }: FloodsProps): JSX.Element {
   const [threshold, setThreshold] = useState<number>(0.025);
   const [floods, setFloods] = useState<string[]>([]);
+  const [displayRows, setdisplayRows] = React.useState([{ "start": "", "end": "", "duration": "", "average": ""}]);
 
+  let rows = [{ "start": "", "end": "", "duration": "", "average": ""}];
+  let floodList = [{"start_date": " ", "end_date": " ", "duration": " ", "average": " "}];
   useEffect(() => {
     fetch(
       // prettier-ignore
@@ -99,6 +111,35 @@ export function Floods({
       .then((res) => {
         console.log(res["data"]);
         setFloods(res["data"]);
+      });
+  }, [start, end, granularity, threshold]);
+
+  useEffect(() => {
+    fetch(
+      "/getFloodLevelData/?floodThreshold=" +
+      threshold +
+        "&station_id=" +
+        station.id +
+        "&start_date=" +
+        start.toISOString().replaceAll("-", "").split("T")[0] +
+        "&end_date=" +
+        end.toISOString().replaceAll("-", "").split("T")[0] +
+        "&product=" +
+        "water_level"
+    )
+      .then((res) => res.json())
+      .then((res) =>  {floodList = res.data;})
+      .then((res) => {
+        
+        rows = [];
+        for (let i = 0; i < floodList.length; i++) {
+          rows.push({ "start": floodList[i].start_date, "end": floodList[i].end_date, "duration": floodList[i].duration, "average": floodList[i].average});
+        }
+        setdisplayRows([]);
+        setdisplayRows(rows);
+        console.log("here goes the rows")
+        console.log(displayRows);
+
       });
   }, [start, end, granularity, threshold]);
 
@@ -123,6 +164,31 @@ export function Floods({
           <li key={i}>{date}</li>
         ))}
       </ol>
+      <TableContainer component={Paper}>
+          <Table size="small" aria-label="a dense table">
+            <TableHead>
+              <TableRow>
+                <TableCell>StartDate</TableCell>
+                <TableCell align="right">EndDate</TableCell>
+                <TableCell align="right">Duration</TableCell>
+                <TableCell align="right">Average</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {displayRows.map((displayRows) => (
+                <TableRow key={displayRows.start}>
+                  <TableCell component="th" scope="row">
+                    {displayRows.start}
+                  </TableCell>
+                  <TableCell align="right">{displayRows.end}</TableCell>
+                  <TableCell align="right">{displayRows.duration}</TableCell>
+                  <TableCell align="right">{displayRows.average}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+
     </div>
   );
 }
