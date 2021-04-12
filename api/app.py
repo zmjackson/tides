@@ -184,18 +184,25 @@ def get_floods():
 
 def get_num_of_req_and_date_range(start_date, end_date):
     number_of_requests = 1
+    date_range = 0
+    error = False
     # parse through date_range and divide into 
     # multiple requests if date range is greater than 31 days
     start_time = datetime.strptime(start_date, "%Y%m%d")
     end_time = datetime.strptime(end_date, "%Y%m%d")
-    date_range_string = str(abs(end_time - start_time))
+    if(start_date == end_date):
+        error = True
+    elif(int(str(end_time - start_time).split(" ")[0]) < 0):
+        error = True
+    else:
+        date_range_string = str(abs(end_time - start_time))
 
-    date_range = int(date_range_string.split(" ")[0])
+        date_range = int(date_range_string.split(" ")[0])
 
-    if(date_range > 31):
-        number_of_requests = math.ceil(date_range / 31)
+        if(date_range > 31):
+            number_of_requests = math.ceil(date_range / 31)
 
-    return number_of_requests, date_range
+    return number_of_requests, date_range, error
 
 
 def update_date_range(number_of_requests, date_range, start_date, end_date):
@@ -218,6 +225,18 @@ def get_duration(start_date, end_date):
     time_delta = str(abs(end_time - start_time))
     return time_delta
 
+def get_duration_month(start_date, end_date, isEnd):
+    month_delta = int(end_date.split('-')[1]) - int(start_date.split('-')[1])
+    year_delta = int(end_date.split('-')[0]) - int(start_date.split('-')[0])
+
+    time_delta = month_delta + (year_delta * 12)
+    print(isEnd)
+    if(isEnd):
+        time_delta = time_delta + 1
+    time_delta_str = str(time_delta) + " month"
+    if(time_delta > 1):
+        time_delta_str = time_delta_str + 's'
+    return time_delta_str
 
 def get_average(array):
     sum = 0
@@ -239,8 +258,11 @@ def get_flood_level_data():
     station_id = request.args["station_id"]
     flood_level = request.args["floodThreshold"]
     product = request.args["product"]
- 
-    number_of_requests, date_range = get_num_of_req_and_date_range(start_date, end_date)
+
+    number_of_requests, date_range, error = get_num_of_req_and_date_range(start_date, end_date)
+
+    if(product == 'monthly_mean'):
+        number_of_requests = 1
 
     flood_started = False
     flood_collection_data_json = {}
@@ -254,13 +276,15 @@ def get_flood_level_data():
     missing_water_level_dates = []
     error_message = []
 
-    for x in range(number_of_requests):
-        if(date_range == 0):
-            break
-        else:
-            date_range, end_date = update_date_range(number_of_requests, date_range, start_date, end_date)
-        
-        try:
+    if(error == False):
+        for x in range(number_of_requests):
+            if(product != "monthly_mean"):
+                if(date_range == 0):
+                    break
+                else:
+                    date_range, end_date = update_date_range(number_of_requests, date_range, start_date, end_date)
+            
+            # try:
             resJson = request_basic_range(start_date, end_date, station_id, product).json()
 
             index = 0
@@ -278,15 +302,16 @@ def get_flood_level_data():
                             all_flood_levels.append(resJson['MSL'])
                             if(float(resJson['MSL']) >= float(flood_level)):
                                 if(flood_started == False):
-                                    flood['start_date'] = resJson['year'] + '-' + resJson['month']
+                                    flood['start_date'] = resJson['year'] + '-' + resJson['month'] 
                                     flood_started = True
                                 flood_levels.append(resJson['MSL'])
                                 
-                            if((float(resJson['MSL']) < float(flood_level) and flood_started) or (index == num_of_datapoints and flood_started == True and x == number_of_requests - 1)):
+                            if((float(resJson['MSL']) < float(flood_level) and flood_started) or (index == num_of_datapoints and flood_started == True)):
                                 # get end date
                                 flood['end_date'] = resJson['year'] + '-' + resJson['month']
 
-                                flood['duration'] = get_duration(flood["start_date"], flood["end_date"])
+                                end = (index == num_of_datapoints)
+                                flood['duration'] = get_duration_month(flood["start_date"], flood["end_date"], end)
 
                                 # increment number of floods
                                 num_of_floods = num_of_floods + 1
@@ -344,13 +369,19 @@ def get_flood_level_data():
                 if(product == "monthly_mean"):
                     lastMonth = datetime.today().replace(day=1) - timedelta(days=1)
                     date = lastMonth.strftime("%B %d, %Y")
-                    error_message.append("Monthly means are only available through: " + date)
-        except:
-            missing_water_level_dates.append(start_date + "-" + end_date)
+                    error_message.append("Monthly means are only available through: " + date + ". Check your date range. If requests are before " + date + ", then data might not be available during the date range provided.")
+                else:
+                    error_message.append("Data not avialable given current date range")
+                
+            # except:
+            #     missing_water_level_dates.append(start_date + "-" + end_date)
+            #     print("WHAT THE FUCK")
 
-        # update start date to be one past the end date 
-        start_date = (datetime.strptime(end_date, "%Y%m%d") + timedelta(days=1)).strftime("%Y%m%d")
-        
+            # update start date to be one past the end date 
+            start_date = (datetime.strptime(end_date, "%Y%m%d") + timedelta(days=1)).strftime("%Y%m%d")
+
+    if(error):
+            error_message.append("Start date must be after end date")
     # metadata
     metadata['num_of_floods'] = num_of_floods
 
