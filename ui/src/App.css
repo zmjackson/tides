@@ -5,12 +5,12 @@ html * {
   color: #464c4f;
 }
 
-h1 {
-  font-size: 20px;
+body {
+  background-color: #f4f6f6;
 }
 
-.content {
-  background-color: #f4f6f6;
+h1 {
+  font-size: 20px;
 }
 
 .text-primary-dark {
