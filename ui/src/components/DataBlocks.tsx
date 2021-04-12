@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { StationMetaData } from "../types/Stations";
 import { Granularity } from "./Dashboard";
+import { Datum } from "./Dashboard";
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
@@ -15,6 +16,7 @@ type BasicDataProps = {
   start: Date;
   end: Date;
   granularity: Granularity;
+  datum: Datum;
 };
 
 export function BasicChart({
@@ -22,6 +24,7 @@ export function BasicChart({
   start,
   end,
   granularity,
+  datum,
 }: BasicDataProps): JSX.Element {
   const [labels, setLabels] = useState<string[]>([]);
   const [levels, setLevels] = useState<number[]>([]);
@@ -34,6 +37,7 @@ export function BasicChart({
                         }&start_date=${start.toISOString().replaceAll("-", "").split("T")[0]
                         }&end_date=${end.toISOString().replaceAll("-", "").split("T")[0]
                         }&station_id=${station.id
+                        }&datum=${datum
                         }&product=${granularity}`
     )
       .then((res) => res.json())
@@ -41,7 +45,7 @@ export function BasicChart({
         setLabels(res["metadata"]["all_water_level_dates"]);
         setLevels(res["metadata"]["all_water_levels"]);
       });
-  }, [start, end, granularity]);
+  }, [start, end, granularity, datum]);
 
   const data = {
     labels: labels,
@@ -89,6 +93,7 @@ export function Floods({
   start,
   end,
   granularity,
+  datum,
 }: BasicDataProps): JSX.Element {
   const [threshold, setThreshold] = useState<number>(0);
   const [floods, setFloods] = useState<string[]>([]);
@@ -103,6 +108,7 @@ export function Floods({
                   }&end_date=${end.toISOString().replaceAll("-", "").split("T")[0]
                   }&station_id=${station.id
                   }&product=${granularity
+                  }&datum=${datum
                   }&threshold=${threshold}`
     )
       .then((res) => res.json())
@@ -110,7 +116,7 @@ export function Floods({
         console.log(res["data"]);
         setFloods(res["data"]);
       });
-  }, [start, end, granularity, threshold]);
+  }, [start, end, granularity, threshold, datum]);
 
   useEffect(() => {
     fetch(
@@ -123,7 +129,9 @@ export function Floods({
         "&end_date=" +
         end.toISOString().replaceAll("-", "").split("T")[0] +
         "&product=" +
-        "water_level"
+        granularity + 
+        "&datum=" +
+        datum
     )
       .then((res) => res.json())
       .then((res) =>  {floodList = res.data;})
@@ -139,7 +147,7 @@ export function Floods({
         console.log(displayRows);
 
       });
-  }, [start, end, granularity, threshold]);
+  }, [start, end, granularity, threshold, datum]);
 
   const onThresholdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setThreshold(parseFloat(e.target.value));
