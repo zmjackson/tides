@@ -281,7 +281,7 @@ def get_flood_level_data():
                                 flood_started = True
                             flood_levels.append(resJson['v'])
                             
-                        elif((float(resJson['v']) < float(flood_level) and flood_started) or (index == num_of_datapoints and flood_started == True and x == number_of_requests - 1)):
+                        if((float(resJson['v']) < float(flood_level) and flood_started) or (index == num_of_datapoints and flood_started == True and x == number_of_requests - 1)):
                             # get end date
                             flood['end_date'] = resJson['t']
 
