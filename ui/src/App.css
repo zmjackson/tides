@@ -86,6 +86,15 @@ h1 {
 
 /* Data View */
 
+.data-block-options span {
+  margin-right: 1em;
+  margin-left: 1em;
+}
+
+.data-block-options span {
+  margin-right: 1em;
+}
+
 .dashboard-row {
   display: flex;
   flex-direction: row;
