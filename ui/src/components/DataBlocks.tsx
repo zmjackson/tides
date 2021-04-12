@@ -31,15 +31,16 @@ export function BasicChart({
   useEffect(() => {
     fetch(
       // prettier-ignore
-      `/basic_range?begin_date=${start.toISOString().replaceAll("-", "").split("T")[0]
-                  }&end_date=${end.toISOString().replaceAll("-", "").split("T")[0]
-                  }&station_id=${station.id
-                  }&product=${granularity}`
+      `/getFloodLevelData?floodThreshold=${6.0
+                        }&start_date=${start.toISOString().replaceAll("-", "").split("T")[0]
+                        }&end_date=${end.toISOString().replaceAll("-", "").split("T")[0]
+                        }&station_id=${station.id
+                        }&product=${granularity}`
     )
       .then((res) => res.json())
       .then((res) => {
-        setLabels(res["data"]["timestamps"]);
-        setLevels(res["data"]["levels"]);
+        setLabels(res["metadata"]["all_water_level_dates"]);
+        setLevels(res["metadata"]["all_water_levels"]);
       });
   }, [start, end, granularity]);
 
@@ -116,7 +117,7 @@ export function Floods({
 
   useEffect(() => {
     fetch(
-      "/getFloodLevelData/?floodThreshold=" +
+      "/getFloodLevelData?floodThreshold=" +
       threshold +
         "&station_id=" +
         station.id +
