@@ -252,6 +252,7 @@ def get_flood_level_data():
     all_flood_levels = []
     all_water_level_dates = []
     missing_water_level_dates = []
+    error_message = []
 
     for x in range(number_of_requests):
         if(date_range == 0):
@@ -266,45 +267,84 @@ def get_flood_level_data():
             
             try:
                 num_of_datapoints = len(resJson['data'])
+                if product == "monthly_mean":
+                    for resJson in resJson['data']:
+                        index = (index + 1)
+                        all_water_level_dates.append(resJson['year'] + '-' + resJson['month'])
+                        if(resJson['MSL'] == ''):
+                            print("IGNORED")
+                            missing_water_level_dates.append(resJson['year'] + '-' + resJson['month'])
+                        else:
+                            all_flood_levels.append(resJson['MSL'])
+                            if(float(resJson['MSL']) >= float(flood_level)):
+                                if(flood_started == False):
+                                    flood['start_date'] = resJson['year'] + '-' + resJson['month']
+                                    flood_started = True
+                                flood_levels.append(resJson['MSL'])
+                                
+                            if((float(resJson['MSL']) < float(flood_level) and flood_started) or (index == num_of_datapoints and flood_started == True and x == number_of_requests - 1)):
+                                # get end date
+                                flood['end_date'] = resJson['year'] + '-' + resJson['month']
 
-                for resJson in resJson['data']:
-                    index = (index + 1)
-                    all_water_level_dates.append(resJson['t'])
-                    if(resJson['v'] == ''):
-                        print("IGNORED")
-                        missing_water_level_dates.append(resJson['t'])
-                    else:
-                        all_flood_levels.append(resJson['v'])
-                        if(float(resJson['v']) >= float(flood_level)):
-                            if(flood_started == False):
-                                flood['start_date'] = resJson['t']
-                                flood_started = True
-                            flood_levels.append(resJson['v'])
-                            
-                        if((float(resJson['v']) < float(flood_level) and flood_started) or (index == num_of_datapoints and flood_started == True and x == number_of_requests - 1)):
-                            # get end date
-                            flood['end_date'] = resJson['t']
+                                flood['duration'] = get_duration(flood["start_date"], flood["end_date"])
 
-                            flood['duration'] = get_duration(flood["start_date"], flood["end_date"])
+                                # increment number of floods
+                                num_of_floods = num_of_floods + 1
 
-                            # increment number of floods
-                            num_of_floods = num_of_floods + 1
+                                flood['average'] = "{:.3f}".format(get_average(flood_levels))
+                                
+                                # Store flood levels
+                                flood['flood_levels'] = flood_levels
 
-                            flood['average'] = "{:.3f}".format(get_average(flood_levels))
-                            
-                            # Store flood levels
-                            flood['flood_levels'] = flood_levels
+                                # store flood data
+                                flood_collection.append(flood)
 
-                            # store flood data
-                            flood_collection.append(flood)
+                                # reset values
+                                flood_levels = []
+                                flood = {}
+                                flood_started = False
+                else:
+                    for resJson in resJson['data']:
+                        index = (index + 1)
+                        all_water_level_dates.append(resJson['t'])
+                        if(resJson['v'] == ''):
+                            print("IGNORED")
+                            missing_water_level_dates.append(resJson['t'])
+                        else:
+                            all_flood_levels.append(resJson['v'])
+                            if(float(resJson['v']) >= float(flood_level)):
+                                if(flood_started == False):
+                                    flood['start_date'] = resJson['t']
+                                    flood_started = True
+                                flood_levels.append(resJson['v'])
+                                
+                            if((float(resJson['v']) < float(flood_level) and flood_started) or (index == num_of_datapoints and flood_started == True and x == number_of_requests - 1)):
+                                # get end date
+                                flood['end_date'] = resJson['t']
 
-                            # reset values
-                            flood_levels = []
-                            flood = {}
-                            flood_started = False
+                                flood['duration'] = get_duration(flood["start_date"], flood["end_date"])
+
+                                # increment number of floods
+                                num_of_floods = num_of_floods + 1
+
+                                flood['average'] = "{:.3f}".format(get_average(flood_levels))
+                                
+                                # Store flood levels
+                                flood['flood_levels'] = flood_levels
+
+                                # store flood data
+                                flood_collection.append(flood)
+
+                                # reset values
+                                flood_levels = []
+                                flood = {}
+                                flood_started = False
             except KeyError:
                 missing_water_level_dates.append(start_date + "-" +  end_date)
-                print("NO DATA AVAILABLE")
+                if(product == "monthly_mean"):
+                    lastMonth = datetime.today().replace(day=1) - timedelta(days=1)
+                    date = lastMonth.strftime("%B %d, %Y")
+                    error_message.append("Monthly means are only available through: " + date)
         except:
             missing_water_level_dates.append(start_date + "-" + end_date)
 
@@ -319,6 +359,7 @@ def get_flood_level_data():
     metadata['all_water_levels'] = all_flood_levels
     metadata['all_water_level_dates'] = all_water_level_dates
     metadata['missing_water_level_dates'] = missing_water_level_dates
+    metadata['error'] = error_message
     # store data in json
     flood_collection_data_json['data'] = flood_collection
     flood_collection_data_json['metadata'] = metadata
