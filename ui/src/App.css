@@ -5,36 +5,13 @@ html * {
   color: #464c4f;
 }
 
-/* html,
 body {
-  height: 100%;
-  margin: 0;
+  background-color: #f4f6f6;
 }
 
-.box {
-  display: flex;
-  flex-flow: column;
-  height: 100%;
+h1 {
+  font-size: 20px;
 }
-
-.box .row {
-  border: 1px dotted grey;
-}
-
-.box .row.header {
-  flex: 0 1 auto;
-}
-
-.box .row.content {
-  display: flex;
-  flex-flow: column;
-  flex: 1 1 auto;
-  overflow-y: auto;
-}
-
-.box .row.footer {
-  flex: 0 1 40px;
-} */
 
 .text-primary-dark {
   font-weight: 700;
@@ -67,9 +44,10 @@ body {
 /* Top Ribbon */
 
 .top-ribbon {
+  background-color: white;
   display: flex;
   height: 3em;
-  border-bottom: 1px solid #d7dbdb;
+  box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.13);
   align-items: center;
 }
 
@@ -108,6 +86,38 @@ body {
 
 /* Data View */
 
+.data-block-options span {
+  margin-right: 1em;
+  margin-left: 1em;
+}
+
+.data-block-options span {
+  margin-right: 1em;
+}
+
+.dashboard-row {
+  display: flex;
+  flex-direction: row;
+}
+
+.data-block-container {
+  background-color: white;
+  border: 1px solid #d7dbdb;
+  border-radius: 3px;
+  /* box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.13); */
+  padding: 1em;
+  margin: 1em;
+  height: fit-content;
+}
+
+.chart-block {
+  flex: 2 1 0;
+}
+
+.floods-block {
+  flex: 1 1 0
+}
+
 .data-views-container {
   display: flex;
   justify-content: space-evenly;
@@ -119,7 +129,6 @@ body {
   border-radius: 3px;
   margin: 1em;
   background-color: #f4f6f6;
-  max-width: 50%;
 }
 
 .data-view-header {
@@ -143,7 +152,6 @@ body {
 
 .data-block-options {
   display: flex;
-  justify-content: flex-start;
-  margin-top: 1em;
+  margin: 1em;
   font-weight: 500;
 }

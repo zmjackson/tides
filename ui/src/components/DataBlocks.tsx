@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { StationMetaData } from "../types/Stations";
-import { Granularity } from "./DataBlock";
+import { Granularity } from "./Dashboard";
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
@@ -8,10 +8,9 @@ import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
-
 import { Line } from "react-chartjs-2";
 
-type BasicChartProps = {
+type BasicDataProps = {
   station: StationMetaData;
   start: Date;
   end: Date;
@@ -23,7 +22,7 @@ export function BasicChart({
   start,
   end,
   granularity,
-}: BasicChartProps): JSX.Element {
+}: BasicDataProps): JSX.Element {
   const [labels, setLabels] = useState<string[]>([]);
   const [levels, setLevels] = useState<number[]>([]);
   
@@ -78,22 +77,20 @@ export function BasicChart({
     },
     elements: { point: { radius: 0, hitRadius: 10, hoverRadius: 5 } },
   };
-  return <Line data={data} options={options} />;
+  return (
+    <div className="data-block-container chart-block">
+      <Line data={data} options={options} />
+    </div>
+  );
 }
 
-type FloodsProps = {
-  station: StationMetaData;
-  start: Date;
-  end: Date;
-  granularity: Granularity;
-};
 export function Floods({
   station,
   start,
   end,
   granularity,
-}: FloodsProps): JSX.Element {
-  const [threshold, setThreshold] = useState<number>(0.025);
+}: BasicDataProps): JSX.Element {
+  const [threshold, setThreshold] = useState<number>(0);
   const [floods, setFloods] = useState<string[]>([]);
   const [displayRows, setdisplayRows] = React.useState([{ "start": "", "end": "", "duration": "", "average": ""}]);
 
@@ -149,7 +146,7 @@ export function Floods({
   };
 
   return (
-    <div>
+    <div className="data-block-container floods-block">
       <p>Threshold:</p>
       <input
         type="number"
@@ -159,12 +156,6 @@ export function Floods({
         onChange={onThresholdChange}
       />
       <p>Floods:</p>
-      <ol>
-        {" "}
-        {floods.map((date, i) => (
-          <li key={i}>{date}</li>
-        ))}
-      </ol>
       <TableContainer component={Paper}>
           <Table size="small" aria-label="a dense table">
             <TableHead>

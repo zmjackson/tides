@@ -10,11 +10,6 @@ export type Granularity =
   | "daily_mean"
   | "monthly_mean";
 
-type DataBlockProps = {
-  station: StationMetaData;
-  title: string;
-};
-
 const yesterday = (): Date => {
   const today = new Date();
   const y = new Date();
@@ -22,10 +17,9 @@ const yesterday = (): Date => {
   return y;
 };
 
-export default function DataBlock({
-  station,
-  title,
-}: DataBlockProps): JSX.Element {
+type DashboardProps = { station: StationMetaData };
+
+export default function Dashboard({ station }: DashboardProps): JSX.Element {
   const [startDate, setStartDate] = useState<Date>(yesterday());
   const [endDate, setEndDate] = useState<Date>(new Date());
   const [granularity, setGranularity] = useState<Granularity>("water_level");
@@ -35,32 +29,30 @@ export default function DataBlock({
   };
 
   return (
-    <div className="data-block">
-      <div className="data-block-header">
-        <div>
-          <span className="text-primary-dark">{title}</span>
-        </div>
-        <div className="data-block-options">
-          <span>From</span>
-          <DatePicker
-            selected={startDate}
-            onChange={(date: Date) => setStartDate(date)}
-          />
-          <span>to</span>
-          <DatePicker
-            selected={endDate}
-            onChange={(date: Date) => setEndDate(date)}
-          />
-          <span>with granularity:</span>
-          <select value={granularity} onChange={onSelectGranularity}>
-            <option value="water_level">6 mins</option>
-            <option value="hourly_height">1 hour</option>
-            <option value="daily_mean">1 day</option>
-            <option value="monthly_mean">1 week</option>
-          </select>
-        </div>
+    <div className="data-block-header">
+      <div>
+        <h1>{station.name}</h1>
       </div>
-      <div className="data-block-body">
+      <div className="data-block-options">
+        <span>From</span>
+        <DatePicker
+          selected={startDate}
+          onChange={(date: Date) => setStartDate(date)}
+        />
+        <span>to</span>
+        <DatePicker
+          selected={endDate}
+          onChange={(date: Date) => setEndDate(date)}
+        />
+        <span>with granularity:</span>
+        <select value={granularity} onChange={onSelectGranularity}>
+          <option value="water_level">6 mins</option>
+          <option value="hourly_height">1 hour</option>
+          <option value="daily_mean">1 day</option>
+          <option value="monthly_mean">1 week</option>
+        </select>
+      </div>
+      <div className="dashboard-row">
         <BasicChart
           station={station}
           start={startDate}
