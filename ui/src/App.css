@@ -107,7 +107,15 @@ h1 {
   /* box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.13); */
   padding: 1em;
   margin: 1em;
-  max-height: 30em;
+  height: fit-content;
+}
+
+.chart-block {
+  flex: 2 1 0;
+}
+
+.floods-block {
+  flex: 1 1 0
 }
 
 .data-views-container {

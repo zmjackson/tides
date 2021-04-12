@@ -78,7 +78,7 @@ export function BasicChart({
     elements: { point: { radius: 0, hitRadius: 10, hoverRadius: 5 } },
   };
   return (
-    <div className="data-block-container">
+    <div className="data-block-container chart-block">
       <Line data={data} options={options} />
     </div>
   );
@@ -90,7 +90,7 @@ export function Floods({
   end,
   granularity,
 }: BasicDataProps): JSX.Element {
-  const [threshold, setThreshold] = useState<number>(0.025);
+  const [threshold, setThreshold] = useState<number>(0);
   const [floods, setFloods] = useState<string[]>([]);
   const [displayRows, setdisplayRows] = React.useState([{ "start": "", "end": "", "duration": "", "average": ""}]);
 
@@ -146,7 +146,7 @@ export function Floods({
   };
 
   return (
-    <div className="data-block-container">
+    <div className="data-block-container floods-block">
       <p>Threshold:</p>
       <input
         type="number"
@@ -156,12 +156,6 @@ export function Floods({
         onChange={onThresholdChange}
       />
       <p>Floods:</p>
-      <ol>
-        {" "}
-        {floods.map((date, i) => (
-          <li key={i}>{date}</li>
-        ))}
-      </ol>
       <TableContainer component={Paper}>
           <Table size="small" aria-label="a dense table">
             <TableHead>
