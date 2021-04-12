@@ -2,11 +2,11 @@ import React, { useState, useEffect } from "react";
 import "./App.css";
 import { StationMetaData } from "./types/Stations";
 import { StationsDropdown } from "./components/StationsDropdown";
-import StationDataView from "./components/DataView";
+import StationDataView from "./components/Dashboard";
 
 export default function App(): JSX.Element {
   const [metaData, setMetaData] = useState<StationMetaData[]>([]);
-  const [currentStations, setCurrentStations] = useState<StationMetaData[]>([]);
+  const [station, setStation] = useState<StationMetaData>();
 
   useEffect(() => {
     fetch("/station_metadata")
@@ -14,16 +14,16 @@ export default function App(): JSX.Element {
       .then((res) => setMetaData(res));
   }, []);
 
-  const addStation = (station: StationMetaData) =>
-    setCurrentStations([...currentStations, station]);
-
   return (
     <div className="box">
       <div className="top-ribbon">
-        <StationsDropdown stations={metaData} addStation={addStation} />
+        <StationsDropdown
+          stations={metaData}
+          addStation={(station) => setStation(station)}
+        />
       </div>
       <div className="content">
-        <StationDataView currentStations={currentStations} />
+        {station && <StationDataView station={station} />}
       </div>
     </div>
   );

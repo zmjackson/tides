@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { StationMetaData } from "../types/Stations";
-import { Granularity } from "./DataBlock";
+import { Granularity } from "./Dashboard";
 import { Line } from "react-chartjs-2";
 
-type BasicChartProps = {
+type BasicDataProps = {
   station: StationMetaData;
   start: Date;
   end: Date;
@@ -15,17 +15,18 @@ export function BasicChart({
   start,
   end,
   granularity,
-}: BasicChartProps): JSX.Element {
+}: BasicDataProps): JSX.Element {
   const [labels, setLabels] = useState<string[]>([]);
   const [levels, setLevels] = useState<number[]>([]);
 
   useEffect(() => {
     fetch(
       // prettier-ignore
-      `/basic_range?begin_date=${start.toISOString().replaceAll("-", "").split("T")[0]
+      `/getFloodLevelData?start_date=${start.toISOString().replaceAll("-", "").split("T")[0]
                   }&end_date=${end.toISOString().replaceAll("-", "").split("T")[0]
                   }&station_id=${station.id
-                  }&product=${granularity}`
+                  }&product=${granularity
+                  }&floodThreshold=${0}`
     )
       .then((res) => res.json())
       .then((res) => {
@@ -68,21 +69,19 @@ export function BasicChart({
     },
     elements: { point: { radius: 0, hitRadius: 10, hoverRadius: 5 } },
   };
-  return <Line data={data} options={options} />;
+  return (
+    <div className="data-block-container">
+      <Line data={data} options={options} />
+    </div>
+  );
 }
 
-type FloodsProps = {
-  station: StationMetaData;
-  start: Date;
-  end: Date;
-  granularity: Granularity;
-};
 export function Floods({
   station,
   start,
   end,
   granularity,
-}: FloodsProps): JSX.Element {
+}: BasicDataProps): JSX.Element {
   const [threshold, setThreshold] = useState<number>(0.025);
   const [floods, setFloods] = useState<string[]>([]);
 
@@ -107,7 +106,7 @@ export function Floods({
   };
 
   return (
-    <div>
+    <div className="data-block-container">
       <p>Threshold:</p>
       <input
         type="number"
