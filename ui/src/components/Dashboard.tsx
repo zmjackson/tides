@@ -172,7 +172,7 @@ export default function Dashboard({ station }: DashboardProps): JSX.Element {
           MHHW_levels={((granularity === "water_level") && allMeans) ? allMeans.data.all_MHHW_levels: []}
           MLLW_levels={((granularity === "water_level") && allMeans) ? allMeans.data.all_MLLW_levels: []}
           MHW_levels={((granularity === "water_level") && allMeans) ? allMeans.data.all_MHW_levels: []}
-          MLW_levels={((granularity === "water_level") && allMeans) ? allMeans.data.all_MLLW_levels: []}
+          MLW_levels={((granularity === "water_level") && allMeans) ? allMeans.data.all_MLW_levels: []}
         />
         <Floods
           data={allData ? allData.data : []}
