@@ -12,19 +12,30 @@ import { FloodData } from "./Dashboard";
 type BasicChartProps = {
   levels: string[];
   labels: string[];
+  prediction_levels: string[];
 };
 
-export function BasicChart({ levels, labels }: BasicChartProps): JSX.Element {
+export function BasicChart({ levels, labels, prediction_levels }: BasicChartProps): JSX.Element {
   const data = {
     labels: labels,
     datasets: [
       {
         label: "Water Level Data",
         data: levels,
-        borderColor: ["rgba(32, 143, 217, 0.2)"],
-        backgroundColor: ["rgba(32, 143, 217, 0.2)"],
+        borderColor: ["rgba(32, 143, 217, 0.5)"],
+        backgroundColor: ["rgba(32, 143, 217, 0.5)"],
         pointBackgroundColor: ["rgba(243, 241, 149, 0.2)"],
         pointBorderColor: ["rgba(243, 241, 149, 0.2)"],
+        fill: false
+      },
+      {
+        label: "Predictions",
+        data: prediction_levels,
+        borderColor: ["rgba(248, 88, 88, 0.5)"],
+        backgroundColor: ["rgba(248, 88, 88, 0.5)"],
+        pointBackgroundColor: ["rgba(243, 241, 149, 0.2)"],
+        pointBorderColor: ["rgba(243, 241, 149, 0.2)"],
+        fill: false
       },
     ],
   };

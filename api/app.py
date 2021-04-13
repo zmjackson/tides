@@ -326,3 +326,58 @@ def get_flood_level_data():
 
     ret = json.dumps(flood_collection_data_json)
     return ret
+
+@app.route("/getPredictions")
+def get_predictions():
+    start_date = request.args["start_date"]
+    end_date = request.args["end_date"]
+    station_id = request.args["station_id"]
+    datum = request.args["datum"]
+
+    number_of_requests, date_range = get_num_of_req_and_date_range(start_date, end_date)
+
+    prediction_collection_data_json = {}
+    data = {}
+    all_prediction_levels = []
+    all_prediction_level_dates = []
+    missing_water_level_dates = []
+
+    for x in range(number_of_requests):
+        if(date_range == 0):
+            break
+        else:
+            date_range, end_date = update_date_range(number_of_requests, date_range, start_date, end_date)
+        
+        try:
+            resJson = request_basic_range(start_date, end_date, station_id, "predictions", datum).json()
+
+            index = 0
+            
+            try:
+                num_of_datapoints = len(resJson['predictions'])
+
+                for resJson in resJson['predictions']:
+                    index = (index + 1)
+                    all_prediction_level_dates.append(resJson['t'])
+                    if(resJson['v'] == ''):
+                        print("IGNORED")
+                        missing_water_level_dates.append(resJson['t'])
+                    else:
+                        all_prediction_levels.append(resJson['v'])
+            except KeyError:
+                missing_water_level_dates.append(start_date + "-" +  end_date)
+                print("NO DATA AVAILABLE")
+        except:
+            missing_water_level_dates.append(start_date + "-" + end_date)
+
+        # update start date to be one past the end date 
+        start_date = (datetime.strptime(end_date, "%Y%m%d") + timedelta(days=1)).strftime("%Y%m%d")
+        
+    data['all_prediction_levels'] = all_prediction_levels
+    data['all_prediction_level_dates'] = all_prediction_level_dates
+    data['missing_water_level_dates'] = missing_water_level_dates
+
+    prediction_collection_data_json['data'] = data
+
+    ret = json.dumps(prediction_collection_data_json)
+    return ret
