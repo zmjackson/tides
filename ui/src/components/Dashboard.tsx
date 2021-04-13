@@ -104,7 +104,7 @@ export default function Dashboard({ station }: DashboardProps): JSX.Element {
           <option value="water_level">6 mins</option>
           <option value="hourly_height">1 hour</option>
           <option value="daily_mean">1 day</option>
-          <option value="monthly_mean">1 week</option>
+          <option value="monthly_mean">1 month</option>
         </select>
         <span>and datum:</span>
         <select value={datum} onChange={onSelectDatum}>
@@ -118,7 +118,7 @@ export default function Dashboard({ station }: DashboardProps): JSX.Element {
           <option value="NAVD">NAVD</option>
         </select>{" "}
         <span>
-          {allData?.metadata.error.map((error, i) => (
+          {allData?.metadata.error?.map((error, i) => (
             <text className="error-message" key={i}>
               {error}
             </text>
