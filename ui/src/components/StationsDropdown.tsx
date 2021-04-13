@@ -109,7 +109,7 @@ export const StationsDropdown = ({
   return (
     <div style={{ position: "relative" }}>
       <span onClick={() => setOpen(!open)} className="top-link">
-        Add Station {open ? "▲" : "▼"}
+        Choose Station {open ? "▲" : "▼"}
       </span>
       {open && (
         <DetectOutsideClick onOutsideClick={() => setOpen(false)}>

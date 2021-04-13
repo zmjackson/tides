@@ -71,7 +71,7 @@ def request_basic_range(
     end_date: str,
     station_id: str,
     product: str,
-    datum="STND",
+    datum: str,
     units="english",
     time_zone="GMT",
     application="UF_Tides_Project",
@@ -258,6 +258,7 @@ def get_flood_level_data():
     station_id = request.args["station_id"]
     flood_level = request.args["floodThreshold"]
     product = request.args["product"]
+    datum = request.args["datum"]
 
     number_of_requests, date_range, error = get_num_of_req_and_date_range(start_date, end_date)
 
@@ -285,7 +286,7 @@ def get_flood_level_data():
                     date_range, end_date = update_date_range(number_of_requests, date_range, start_date, end_date)
             
             # try:
-            resJson = request_basic_range(start_date, end_date, station_id, product).json()
+            resJson = request_basic_range(start_date, end_date, station_id, product, datum).json()
 
             index = 0
             
