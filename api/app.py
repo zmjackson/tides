@@ -381,3 +381,84 @@ def get_predictions():
 
     ret = json.dumps(prediction_collection_data_json)
     return ret
+
+
+def get_data_from_noaa_json(resJson, all_levels, all_level_dates, missing_water_level_dates):
+    # all_levels = []
+    # all_level_dates = []
+    # missing_water_level_dates = []
+
+    for resJson in resJson['data']:
+        all_level_dates.append(resJson['t'])
+        if(resJson['v'] == ''):
+            print("IGNORED")
+            missing_water_level_dates.append(resJson['t'])
+        else:
+            all_levels.append(resJson['v'])
+
+    return all_levels, all_level_dates, missing_water_level_dates
+
+
+@app.route("/getMeanData")
+def get_mean_data():
+    start_date = request.args["start_date"]
+    end_date = request.args["end_date"]
+    station_id = request.args["station_id"]
+    product = request.args["product"]
+
+    number_of_requests, date_range = get_num_of_req_and_date_range(start_date, end_date)
+
+    mean_collection_data_json = {}
+    data = {}
+    all_MHHW_levels = []
+    all_MHHW_level_dates = []
+    all_MLLW_levels = []
+    all_MLLW_level_dates = []
+    all_MHW_levels = []
+    all_MHW_level_dates = []
+    all_MLW_levels = []
+    all_MLW_level_dates = []
+    missing_water_level_dates = []
+
+    for x in range(number_of_requests):
+        if(date_range == 0):
+            break
+        else:
+            date_range, end_date = update_date_range(number_of_requests, date_range, start_date, end_date)
+        
+        try:
+            resJsonMHHW = request_basic_range(start_date, end_date, station_id, product, "MHHW").json()
+            resJsonMLLW = request_basic_range(start_date, end_date, station_id, product, "MLLW").json()
+            resJsonMLW = request_basic_range(start_date, end_date, station_id, product, "MLW").json()
+            resJsonMHW = request_basic_range(start_date, end_date, station_id, product, "MHW").json()
+
+            
+            try:
+                get_data_from_noaa_json(resJsonMHHW, all_MHHW_levels, all_MHHW_level_dates, missing_water_level_dates)
+                get_data_from_noaa_json(resJsonMLLW, all_MLLW_levels, all_MLLW_level_dates, missing_water_level_dates)
+                get_data_from_noaa_json(resJsonMHW, all_MHW_levels, all_MHW_level_dates, missing_water_level_dates)
+                get_data_from_noaa_json(resJsonMLW, all_MLW_levels, all_MLW_level_dates, missing_water_level_dates)
+                
+            except KeyError:
+                missing_water_level_dates.append(start_date + "-" +  end_date)
+                print("NO DATA AVAILABLE")
+        except:
+            missing_water_level_dates.append(start_date + "-" + end_date)
+
+        # update start date to be one past the end date 
+        start_date = (datetime.strptime(end_date, "%Y%m%d") + timedelta(days=1)).strftime("%Y%m%d")
+        
+    data['all_MHHW_levels'] = all_MHHW_levels
+    data['all_MHHW_level_dates'] = all_MHHW_level_dates
+    data['all_MLLW_levels'] = all_MLLW_levels
+    data['all_MLLW_level_dates'] = all_MLLW_level_dates
+    data['all_MHW_levels'] = all_MHW_levels
+    data['all_MHW_level_dates'] = all_MHW_level_dates
+    data['all_MLW_levels'] = all_MLW_levels
+    data['all_MLW_level_dates'] = all_MLW_level_dates
+    data['missing_water_level_dates'] = missing_water_level_dates
+
+    mean_collection_data_json['data'] = data
+
+    ret = json.dumps(mean_collection_data_json)
+    return ret
