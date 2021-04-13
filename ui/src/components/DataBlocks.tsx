@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { StationMetaData } from "../types/Stations";
-import { Granularity } from "./Dashboard";
+import { Granularity, FloodData } from "./Dashboard";
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
@@ -84,65 +84,19 @@ export function BasicChart({
   );
 }
 
+type FloodsProps = {
+  data: FloodData[];
+  threshold: number;
+  onSetThreshold: (threshold: number) => void;
+}
+
 export function Floods({
-  station,
-  start,
-  end,
-  granularity,
-}: BasicDataProps): JSX.Element {
-  const [threshold, setThreshold] = useState<number>(0);
-  const [floods, setFloods] = useState<string[]>([]);
-  const [displayRows, setdisplayRows] = React.useState([{ "start": "", "end": "", "duration": "", "average": ""}]);
-
-  let rows = [{ "start": "", "end": "", "duration": "", "average": ""}];
-  let floodList = [{"start_date": " ", "end_date": " ", "duration": " ", "average": " "}];
-  useEffect(() => {
-    fetch(
-      // prettier-ignore
-      `/floods?begin_date=${start.toISOString().replaceAll("-", "").split("T")[0]
-                  }&end_date=${end.toISOString().replaceAll("-", "").split("T")[0]
-                  }&station_id=${station.id
-                  }&product=${granularity
-                  }&threshold=${threshold}`
-    )
-      .then((res) => res.json())
-      .then((res) => {
-        console.log(res["data"]);
-        setFloods(res["data"]);
-      });
-  }, [start, end, granularity, threshold]);
-
-  useEffect(() => {
-    fetch(
-      "/getFloodLevelData?floodThreshold=" +
-      threshold +
-        "&station_id=" +
-        station.id +
-        "&start_date=" +
-        start.toISOString().replaceAll("-", "").split("T")[0] +
-        "&end_date=" +
-        end.toISOString().replaceAll("-", "").split("T")[0] +
-        "&product=" +
-        "water_level"
-    )
-      .then((res) => res.json())
-      .then((res) =>  {floodList = res.data;})
-      .then((res) => {
-        
-        rows = [];
-        for (let i = 0; i < floodList.length; i++) {
-          rows.push({ "start": floodList[i].start_date, "end": floodList[i].end_date, "duration": floodList[i].duration, "average": floodList[i].average});
-        }
-        setdisplayRows([]);
-        setdisplayRows(rows);
-        console.log("here goes the rows")
-        console.log(displayRows);
-
-      });
-  }, [start, end, granularity, threshold]);
-
+  data, threshold, onSetThreshold
+}: FloodsProps): JSX.Element {
   const onThresholdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setThreshold(parseFloat(e.target.value));
+    const newThreshold = parseFloat(e.target.value)
+    console.log(newThreshold);
+    onSetThreshold(newThreshold);
   };
 
   return (
@@ -150,7 +104,7 @@ export function Floods({
       <p>Threshold:</p>
       <input
         type="number"
-        step="0.001"
+        step="0.1"
         min="0"
         value={threshold}
         onChange={onThresholdChange}
@@ -167,14 +121,14 @@ export function Floods({
               </TableRow>
             </TableHead>
             <TableBody>
-              {displayRows.map((displayRows) => (
-                <TableRow key={displayRows.start}>
+              {data.map((flood) => (
+                <TableRow key={flood.start_date}>
                   <TableCell component="th" scope="row">
-                    {displayRows.start}
+                    {flood.start_date}
                   </TableCell>
-                  <TableCell align="right">{displayRows.end}</TableCell>
-                  <TableCell align="right">{displayRows.duration}</TableCell>
-                  <TableCell align="right">{displayRows.average}</TableCell>
+                  <TableCell align="right">{flood.end_date}</TableCell>
+                  <TableCell align="right">{flood.duration}</TableCell>
+                  <TableCell align="right">{flood.average}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

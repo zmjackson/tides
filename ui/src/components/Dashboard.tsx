@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { StationMetaData } from "../types/Stations";
@@ -9,6 +9,27 @@ export type Granularity =
   | "hourly_height"
   | "daily_mean"
   | "monthly_mean";
+
+export type FloodData = {
+  start_date: string,
+  end_date: string;
+  duration: string;
+  average: string;
+  flood_levels: string[];
+};
+
+export type FloodMetadata = {
+  num_of_floods: number;
+  overall_average: string;
+  all_water_levels: string[];
+  all_water_level_dates: string[];
+  missing_water_level_dates: string[];
+};
+
+export type AllData = {
+  data: FloodData[];
+  metadata: FloodMetadata;
+};
 
 const yesterday = (): Date => {
   const today = new Date();
@@ -23,6 +44,23 @@ export default function Dashboard({ station }: DashboardProps): JSX.Element {
   const [startDate, setStartDate] = useState<Date>(yesterday());
   const [endDate, setEndDate] = useState<Date>(new Date());
   const [granularity, setGranularity] = useState<Granularity>("water_level");
+  const [threshold, setThreshold] = useState<number>(0);
+  const [allData, setAllData] = useState<AllData>();
+
+  useEffect(() => {
+    fetch(
+      // prettier-ignore
+      `/getFloodLevelData?floodThreshold=${threshold
+                        }&start_date=${startDate.toISOString().replaceAll("-", "").split("T")[0]
+                        }&end_date=${endDate.toISOString().replaceAll("-", "").split("T")[0]
+                        }&station_id=${station.id
+                        }&product=${granularity}`
+    )
+      .then((res) => res.json())
+      .then((res) => {
+        setAllData(res);
+      });
+  }, [startDate, endDate, granularity, threshold]);
 
   const onSelectGranularity = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setGranularity(e.target.value as Granularity);
@@ -30,9 +68,7 @@ export default function Dashboard({ station }: DashboardProps): JSX.Element {
 
   return (
     <div className="data-block-header">
-      <div>
-        <h1>{station.name}</h1>
-      </div>
+      <h1>{station.name}</h1><h2>{station.id}</h2>
       <div className="data-block-options">
         <span>From</span>
         <DatePicker
@@ -60,10 +96,9 @@ export default function Dashboard({ station }: DashboardProps): JSX.Element {
           granularity={granularity}
         />
         <Floods
-          station={station}
-          start={startDate}
-          end={endDate}
-          granularity={granularity}
+          data={allData ? allData.data : []}
+          threshold={threshold}
+          onSetThreshold={(threshold) => setThreshold(threshold)}
         />
       </div>
     </div>

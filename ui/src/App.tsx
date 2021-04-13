@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import "./App.css";
 import { StationMetaData } from "./types/Stations";
 import { StationsDropdown } from "./components/StationsDropdown";
-import StationDataView from "./components/Dashboard";
+import Dashboard from "./components/Dashboard";
 
 export default function App(): JSX.Element {
   const [metaData, setMetaData] = useState<StationMetaData[]>([]);
@@ -23,7 +23,7 @@ export default function App(): JSX.Element {
         />
       </div>
       <div className="content">
-        {station && <StationDataView station={station} />}
+        {station && <Dashboard station={station} />}
       </div>
     </div>
   );
