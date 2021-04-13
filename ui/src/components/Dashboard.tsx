@@ -11,7 +11,7 @@ export type Granularity =
   | "monthly_mean";
 
 export type FloodData = {
-  start_date: string,
+  start_date: string;
   end_date: string;
   duration: string;
   average: string;
@@ -67,8 +67,11 @@ export default function Dashboard({ station }: DashboardProps): JSX.Element {
   };
 
   return (
-    <div className="data-block-header">
-      <h1>{station.name}</h1><h2>{station.id}</h2>
+    <div>
+      <div className="dashboard-header">
+        <span className="station-name">{station.name}</span>
+        <span className="station-id">{station.id}</span>
+      </div>
       <div className="data-block-options">
         <span>From</span>
         <DatePicker

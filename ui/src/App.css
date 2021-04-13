@@ -9,10 +9,6 @@ body {
   background-color: #f4f6f6;
 }
 
-h1 {
-  font-size: 20px;
-}
-
 .text-primary-dark {
   font-weight: 700;
   text-transform: uppercase;
@@ -49,6 +45,7 @@ h1 {
   height: 3em;
   box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.13);
   align-items: center;
+  justify-content: center;
 }
 
 .top-link {
@@ -84,11 +81,38 @@ h1 {
   align-items: center;
 }
 
-/* Data View */
+/* Dashboard */
+
+.dashboard-header {
+  margin: 1em;
+}
+
+.dashboard-header span {
+  font-size: 30px;
+  font-family: 500;
+}
+
+.data-block-options {
+  display: flex;
+  margin: 1em;
+  font-weight: 500;
+}
 
 .data-block-options span {
-  margin-right: 1em;
-  margin-left: 1em;
+  margin-right: 5px;
+  margin-left: 5px;
+}
+
+.station-name {
+  margin-right: 10px;
+}
+
+.station-id {
+  color: #9fa1a2;
+}
+
+.data-block-options span:first-child {
+  margin-left: 0;
 }
 
 .data-block-options:first-child {
@@ -115,7 +139,7 @@ h1 {
 }
 
 .floods-block {
-  flex: 1 1 0
+  flex: 1 1 0;
 }
 
 .data-views-container {
@@ -148,10 +172,4 @@ h1 {
 
 .data-block-header {
   padding: 1em;
-}
-
-.data-block-options {
-  display: flex;
-  margin: 1em;
-  font-weight: 500;
 }
