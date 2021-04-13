@@ -19,7 +19,7 @@ export default function App(): JSX.Element {
       <div className="top-ribbon">
         <StationsDropdown
           stations={metaData}
-          addStation={(station) => setStation(station)}
+          addStation={(station) => setStation({ ...station })}
         />
       </div>
       <div className="content">

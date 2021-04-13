@@ -30,6 +30,15 @@ export type AllData = {
   data: FloodData[];
   metadata: FloodMetadata;
 };
+export type Datum =
+  | "STND"
+  | "MHHW"
+  | "MHW"
+  | "MTL"
+  | "MSL"
+  | "MLW"
+  | "MLLW"
+  | "NAVD";
 
 const yesterday = (): Date => {
   const today = new Date();
@@ -45,6 +54,7 @@ export default function Dashboard({ station }: DashboardProps): JSX.Element {
   const [endDate, setEndDate] = useState<Date>(new Date());
   const [granularity, setGranularity] = useState<Granularity>("water_level");
   const [threshold, setThreshold] = useState<number>(0);
+  const [datum, setDatum] = useState<Datum>("STND");
   const [allData, setAllData] = useState<AllData>();
 
   useEffect(() => {
@@ -54,16 +64,21 @@ export default function Dashboard({ station }: DashboardProps): JSX.Element {
                         }&start_date=${startDate.toISOString().replaceAll("-", "").split("T")[0]
                         }&end_date=${endDate.toISOString().replaceAll("-", "").split("T")[0]
                         }&station_id=${station.id
-                        }&product=${granularity}`
+                        }&product=${granularity
+                        }&datum=${datum}`
     )
       .then((res) => res.json())
       .then((res) => {
         setAllData(res);
       });
-  }, [startDate, endDate, granularity, threshold]);
+  }, [station, startDate, endDate, granularity, threshold, datum]);
 
   const onSelectGranularity = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setGranularity(e.target.value as Granularity);
+  };
+
+  const onSelectDatum = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setDatum(e.target.value as Datum);
   };
 
   return (
@@ -90,13 +105,22 @@ export default function Dashboard({ station }: DashboardProps): JSX.Element {
           <option value="daily_mean">1 day</option>
           <option value="monthly_mean">1 week</option>
         </select>
+        <span>and datum:</span>
+        <select value={datum} onChange={onSelectDatum}>
+          <option value="STND">STND</option>
+          <option value="MHHW">MHHW</option>
+          <option value="MHW">MHW</option>
+          <option value="MTL">MTL</option>
+          <option value="MSL">MSL</option>
+          <option value="MLW">MLW</option>
+          <option value="MLLW">MLLW</option>
+          <option value="NAVD">NAVD</option>
+        </select>
       </div>
       <div className="dashboard-row">
         <BasicChart
-          station={station}
-          start={startDate}
-          end={endDate}
-          granularity={granularity}
+          levels={allData ? allData.metadata.all_water_levels : []}
+          labels={allData ? allData.metadata.all_water_level_dates : []}
         />
         <Floods
           data={allData ? allData.data : []}
