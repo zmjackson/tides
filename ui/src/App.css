@@ -119,6 +119,13 @@ body {
   margin-left: 0;
 }
 
+.error-message {
+  color: #bd1e00;
+  background-color: #ffdfd9;
+  padding: 5px;
+  margin-left: 1em;
+}
+
 .dashboard-row {
   display: flex;
   flex-direction: row;

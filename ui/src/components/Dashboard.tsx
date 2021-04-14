@@ -35,6 +35,7 @@ export type FloodMetadata = {
   all_water_levels: string[];
   all_water_level_dates: string[];
   missing_water_level_dates: string[];
+  error: string[];
 };
 
 export type AllData = {
@@ -162,8 +163,16 @@ export default function Dashboard({ station }: DashboardProps): JSX.Element {
           <option value="MLW">MLW</option>
           <option value="MLLW">MLLW</option>
           <option value="NAVD">NAVD</option>
-        </select>
+        </select>{" "}
+        <span>
+          {allData?.metadata.error?.map((error, i) => (
+            <text className="error-message" key={i}>
+              {error}
+            </text>
+          ))}
+        </span>
       </div>
+
       <div className="dashboard-row">
         <BasicChart
           levels={allData ? allData.metadata.all_water_levels : []}
@@ -172,7 +181,7 @@ export default function Dashboard({ station }: DashboardProps): JSX.Element {
           MHHW_levels={((granularity === "water_level") && allMeans) ? allMeans.data.all_MHHW_levels: []}
           MLLW_levels={((granularity === "water_level") && allMeans) ? allMeans.data.all_MLLW_levels: []}
           MHW_levels={((granularity === "water_level") && allMeans) ? allMeans.data.all_MHW_levels: []}
-          MLW_levels={((granularity === "water_level") && allMeans) ? allMeans.data.all_MLLW_levels: []}
+          MLW_levels={((granularity === "water_level") && allMeans) ? allMeans.data.all_MLW_levels: []}
         />
         <Floods
           data={allData ? allData.data : []}
