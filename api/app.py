@@ -428,7 +428,7 @@ def get_predictions():
     station_id = request.args["station_id"]
     datum = request.args["datum"]
 
-    number_of_requests, date_range = get_num_of_req_and_date_range(
+    number_of_requests, date_range, error = get_num_of_req_and_date_range(
         start_date, end_date)
 
     prediction_collection_data_json = {}
@@ -504,22 +504,28 @@ def get_mean_data():
     station_id = request.args["station_id"]
     product = request.args["product"]
 
-    number_of_requests, date_range = get_num_of_req_and_date_range(
-        start_date, end_date)
 
-    mean_collection_data_json = {}
-    data = {}
-    all_MHHW_levels = []
-    all_MHHW_level_dates = []
-    all_MLLW_levels = []
-    all_MLLW_level_dates = []
-    all_MHW_levels = []
-    all_MHW_level_dates = []
-    all_MLW_levels = []
-    all_MLW_level_dates = []
-    missing_water_level_dates = []
+<< << << < HEAD
+number_of_requests, date_range = get_num_of_req_and_date_range(
+    start_date, end_date)
+== == == =
+number_of_requests, date_range, error = get_num_of_req_and_date_range(
+    start_date, end_date)
+>>>>>> > f47e8f6e441702166917ec97139b3ff2c6894e4c
 
-    for x in range(number_of_requests):
+mean_collection_data_json = {}
+data = {}
+all_MHHW_levels = []
+all_MHHW_level_dates = []
+all_MLLW_levels = []
+all_MLLW_level_dates = []
+all_MHW_levels = []
+all_MHW_level_dates = []
+all_MLW_levels = []
+ all_MLW_level_dates = []
+  missing_water_level_dates = []
+
+   for x in range(number_of_requests):
         if(date_range == 0):
             break
         else:
