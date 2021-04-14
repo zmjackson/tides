@@ -19,7 +19,15 @@ type BasicChartProps = {
   MLW_levels: string[];
 };
 
-export function BasicChart({ levels, labels, prediction_levels, MHHW_levels, MLLW_levels, MHW_levels, MLW_levels }: BasicChartProps): JSX.Element {
+export function BasicChart({
+  levels,
+  labels,
+  prediction_levels,
+  MHHW_levels,
+  MLLW_levels,
+  MHW_levels,
+  MLW_levels,
+}: BasicChartProps): JSX.Element {
   const data = {
     labels: labels,
     datasets: [
@@ -30,52 +38,52 @@ export function BasicChart({ levels, labels, prediction_levels, MHHW_levels, MLL
         backgroundColor: ["rgba(32, 143, 217, 0.5)"],
         pointBackgroundColor: ["rgba(243, 241, 149, 0.2)"],
         pointBorderColor: ["rgba(243, 241, 149, 0.2)"],
-        fill: false
+        fill: false,
       },
       {
         label: "Predictions",
         data: prediction_levels,
-        borderColor: ["rgba(248, 88, 88, 0.5)"],
-        backgroundColor: ["rgba(248, 88, 88, 0.5)"],
+        borderColor: ["rgba(143, 210, 255, 0.5)"],
+        backgroundColor: ["rgba(143, 210, 255, 0.5)"],
         pointBackgroundColor: ["rgba(243, 241, 149, 0.2)"],
         pointBorderColor: ["rgba(243, 241, 149, 0.2)"],
-        fill: false
+        fill: false,
       },
       {
         label: "MHHW",
         data: MHHW_levels,
-        borderColor: ["rgba(213, 239, 15, 0.5)"],
-        backgroundColor: ["rgba(213, 239, 15, 0.5)"],
+        borderColor: ["rgba(246, 140, 62, 0.5)"],
+        backgroundColor: ["rgba(246, 140, 62, 0.5)"],
         pointBackgroundColor: ["rgba(243, 241, 149, 0.2)"],
         pointBorderColor: ["rgba(243, 241, 149, 0.2)"],
-        fill: false
+        fill: false,
       },
       {
         label: "MLLW",
         data: MLLW_levels,
-        borderColor: ["rgba(239, 153, 15, 0.5)"],
-        backgroundColor: ["rgba(239, 153, 15, 0.5)"],
+        borderColor: ["rgba(105, 159, 161, 0.5)"],
+        backgroundColor: ["rgba(105, 159, 161, 0.5)"],
         pointBackgroundColor: ["rgba(243, 241, 149, 0.2)"],
         pointBorderColor: ["rgba(243, 241, 149, 0.2)"],
-        fill: false
+        fill: false,
       },
       {
         label: "MHW",
         data: MHW_levels,
-        borderColor: ["rgba(41, 15, 239, 0.5)"],
-        backgroundColor: ["rgba(41, 15, 239, 0.5)"],
+        borderColor: ["rgba(252, 186, 98, 0.5)"],
+        backgroundColor: ["rgba(252, 186, 98, 0.5)"],
         pointBackgroundColor: ["rgba(243, 241, 149, 0.2)"],
         pointBorderColor: ["rgba(243, 241, 149, 0.2)"],
-        fill: false
+        fill: false,
       },
       {
         label: "MLW",
         data: MLW_levels,
-        borderColor: ["rgba(15, 239, 153, 0.5)"],
-        backgroundColor: ["rgba(15, 239, 153, 0.5)"],
+        borderColor: ["rgba(165, 214, 217, 0.5)"],
+        backgroundColor: ["rgba(165, 214, 217, 0.5)"],
         pointBackgroundColor: ["rgba(243, 241, 149, 0.2)"],
         pointBorderColor: ["rgba(243, 241, 149, 0.2)"],
-        fill: false
+        fill: false,
       },
     ],
   };
