@@ -419,7 +419,7 @@ def get_flood_level_data():
 
     ret = json.dumps(flood_collection_data_json)
     return ret
-<<<<<<< HEAD
+
 
 @app.route("/getPredictions")
 def get_predictions():
@@ -428,7 +428,8 @@ def get_predictions():
     station_id = request.args["station_id"]
     datum = request.args["datum"]
 
-    number_of_requests, date_range = get_num_of_req_and_date_range(start_date, end_date)
+    number_of_requests, date_range = get_num_of_req_and_date_range(
+        start_date, end_date)
 
     prediction_collection_data_json = {}
     data = {}
@@ -440,13 +441,15 @@ def get_predictions():
         if(date_range == 0):
             break
         else:
-            date_range, end_date = update_date_range(number_of_requests, date_range, start_date, end_date)
-        
+            date_range, end_date = update_date_range(
+                number_of_requests, date_range, start_date, end_date)
+
         try:
-            resJson = request_basic_range(start_date, end_date, station_id, "predictions", datum).json()
+            resJson = request_basic_range(
+                start_date, end_date, station_id, "predictions", datum).json()
 
             index = 0
-            
+
             try:
                 num_of_datapoints = len(resJson['predictions'])
 
@@ -459,14 +462,15 @@ def get_predictions():
                     else:
                         all_prediction_levels.append(resJson['v'])
             except KeyError:
-                missing_water_level_dates.append(start_date + "-" +  end_date)
+                missing_water_level_dates.append(start_date + "-" + end_date)
                 print("NO DATA AVAILABLE")
         except:
             missing_water_level_dates.append(start_date + "-" + end_date)
 
-        # update start date to be one past the end date 
-        start_date = (datetime.strptime(end_date, "%Y%m%d") + timedelta(days=1)).strftime("%Y%m%d")
-        
+        # update start date to be one past the end date
+        start_date = (datetime.strptime(end_date, "%Y%m%d") +
+                      timedelta(days=1)).strftime("%Y%m%d")
+
     data['all_prediction_levels'] = all_prediction_levels
     data['all_prediction_level_dates'] = all_prediction_level_dates
     data['missing_water_level_dates'] = missing_water_level_dates
@@ -500,7 +504,8 @@ def get_mean_data():
     station_id = request.args["station_id"]
     product = request.args["product"]
 
-    number_of_requests, date_range = get_num_of_req_and_date_range(start_date, end_date)
+    number_of_requests, date_range = get_num_of_req_and_date_range(
+        start_date, end_date)
 
     mean_collection_data_json = {}
     data = {}
@@ -518,30 +523,39 @@ def get_mean_data():
         if(date_range == 0):
             break
         else:
-            date_range, end_date = update_date_range(number_of_requests, date_range, start_date, end_date)
-        
-        try:
-            resJsonMHHW = request_basic_range(start_date, end_date, station_id, product, "MHHW").json()
-            resJsonMLLW = request_basic_range(start_date, end_date, station_id, product, "MLLW").json()
-            resJsonMLW = request_basic_range(start_date, end_date, station_id, product, "MLW").json()
-            resJsonMHW = request_basic_range(start_date, end_date, station_id, product, "MHW").json()
+            date_range, end_date = update_date_range(
+                number_of_requests, date_range, start_date, end_date)
 
-            
+        try:
+            resJsonMHHW = request_basic_range(
+                start_date, end_date, station_id, product, "MHHW").json()
+            resJsonMLLW = request_basic_range(
+                start_date, end_date, station_id, product, "MLLW").json()
+            resJsonMLW = request_basic_range(
+                start_date, end_date, station_id, product, "MLW").json()
+            resJsonMHW = request_basic_range(
+                start_date, end_date, station_id, product, "MHW").json()
+
             try:
-                get_data_from_noaa_json(resJsonMHHW, all_MHHW_levels, all_MHHW_level_dates, missing_water_level_dates)
-                get_data_from_noaa_json(resJsonMLLW, all_MLLW_levels, all_MLLW_level_dates, missing_water_level_dates)
-                get_data_from_noaa_json(resJsonMHW, all_MHW_levels, all_MHW_level_dates, missing_water_level_dates)
-                get_data_from_noaa_json(resJsonMLW, all_MLW_levels, all_MLW_level_dates, missing_water_level_dates)
-                
+                get_data_from_noaa_json(
+                    resJsonMHHW, all_MHHW_levels, all_MHHW_level_dates, missing_water_level_dates)
+                get_data_from_noaa_json(
+                    resJsonMLLW, all_MLLW_levels, all_MLLW_level_dates, missing_water_level_dates)
+                get_data_from_noaa_json(
+                    resJsonMHW, all_MHW_levels, all_MHW_level_dates, missing_water_level_dates)
+                get_data_from_noaa_json(
+                    resJsonMLW, all_MLW_levels, all_MLW_level_dates, missing_water_level_dates)
+
             except KeyError:
-                missing_water_level_dates.append(start_date + "-" +  end_date)
+                missing_water_level_dates.append(start_date + "-" + end_date)
                 print("NO DATA AVAILABLE")
         except:
             missing_water_level_dates.append(start_date + "-" + end_date)
 
-        # update start date to be one past the end date 
-        start_date = (datetime.strptime(end_date, "%Y%m%d") + timedelta(days=1)).strftime("%Y%m%d")
-        
+        # update start date to be one past the end date
+        start_date = (datetime.strptime(end_date, "%Y%m%d") +
+                      timedelta(days=1)).strftime("%Y%m%d")
+
     data['all_MHHW_levels'] = all_MHHW_levels
     data['all_MHHW_level_dates'] = all_MHHW_level_dates
     data['all_MLLW_levels'] = all_MLLW_levels
@@ -556,5 +570,3 @@ def get_mean_data():
 
     ret = json.dumps(mean_collection_data_json)
     return ret
-=======
->>>>>>> main
