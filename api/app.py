@@ -419,7 +419,6 @@ def get_flood_level_data():
 
     ret = json.dumps(flood_collection_data_json)
     return ret
-<<<<<<< HEAD
 
 @app.route("/getPredictions")
 def get_predictions():
@@ -428,7 +427,7 @@ def get_predictions():
     station_id = request.args["station_id"]
     datum = request.args["datum"]
 
-    number_of_requests, date_range = get_num_of_req_and_date_range(start_date, end_date)
+    number_of_requests, date_range, error = get_num_of_req_and_date_range(start_date, end_date)
 
     prediction_collection_data_json = {}
     data = {}
@@ -500,7 +499,7 @@ def get_mean_data():
     station_id = request.args["station_id"]
     product = request.args["product"]
 
-    number_of_requests, date_range = get_num_of_req_and_date_range(start_date, end_date)
+    number_of_requests, date_range, error = get_num_of_req_and_date_range(start_date, end_date)
 
     mean_collection_data_json = {}
     data = {}
@@ -556,5 +555,3 @@ def get_mean_data():
 
     ret = json.dumps(mean_collection_data_json)
     return ret
-=======
->>>>>>> main
