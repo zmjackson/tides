@@ -4,10 +4,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import { StationMetaData } from "../types/Stations";
 import { BasicChart, Floods } from "./DataBlocks";
 
-export type Granularity =
-  | "water_level"
-  | "hourly_height"
-  | "monthly_mean";
+export type Granularity = "water_level" | "hourly_height" | "monthly_mean";
 
 export type FloodData = {
   start_date: string;
@@ -20,14 +17,14 @@ export type FloodData = {
 export type PredictionData = {
   all_prediction_levels: string[];
   all_prediction_level_dates: string[];
-}
+};
 
 export type MeanData = {
   all_MHHW_levels: string[];
   all_MLLW_levels: string[];
   all_MHW_levels: string[];
   all_MLW_levels: string[];
-}
+};
 
 export type FloodMetadata = {
   num_of_floods: number;
@@ -45,11 +42,11 @@ export type AllData = {
 
 export type AllPredictionData = {
   data: PredictionData;
-}
+};
 
 export type AllMeanData = {
   data: MeanData;
-}
+};
 
 export type Datum =
   | "STND"
@@ -79,8 +76,10 @@ export default function Dashboard({ station }: DashboardProps): JSX.Element {
   const [allData, setAllData] = useState<AllData>();
   const [allPredictions, setAllPredictions] = useState<AllPredictionData>();
   const [allMeans, setAllMeanData] = useState<AllMeanData>();
+  const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
+    setLoading(true);
     fetch(
       // prettier-ignore
       `/getFloodLevelData?floodThreshold=${threshold
@@ -95,31 +94,32 @@ export default function Dashboard({ station }: DashboardProps): JSX.Element {
         setAllData(res);
       });
 
-      fetch(
-        // prettier-ignore
-        `/getPredictions?floodThreshold=${threshold
+    fetch(
+      // prettier-ignore
+      `/getPredictions?floodThreshold=${threshold
                           }&start_date=${startDate.toISOString().replaceAll("-", "").split("T")[0]
                           }&end_date=${endDate.toISOString().replaceAll("-", "").split("T")[0]
                           }&station_id=${station.id
                           }&datum=${datum}`
-      )
-        .then((res) => res.json())
-        .then((res) => {
-          setAllPredictions(res);
-        });
+    )
+      .then((res) => res.json())
+      .then((res) => {
+        setAllPredictions(res);
+      });
 
-        fetch(
-          // prettier-ignore
-          `/getMeanData?start_date=${startDate.toISOString().replaceAll("-", "").split("T")[0]
+    fetch(
+      // prettier-ignore
+      `/getMeanData?start_date=${startDate.toISOString().replaceAll("-", "").split("T")[0]
                             }&end_date=${endDate.toISOString().replaceAll("-", "").split("T")[0]
                             }&station_id=${station.id
                             }&product=${granularity
                             }&datum=${datum}`
-        )
-          .then((res) => res.json())
-          .then((res) => {
-            setAllMeanData(res);
-          });
+    )
+      .then((res) => res.json())
+      .then((res) => {
+        setAllMeanData(res);
+        setLoading(false);
+      });
   }, [station, startDate, endDate, granularity, threshold, datum]);
 
   const onSelectGranularity = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -164,24 +164,43 @@ export default function Dashboard({ station }: DashboardProps): JSX.Element {
           <option value="MLLW">MLLW</option>
           <option value="NAVD">NAVD</option>
         </select>{" "}
-        <span>
-          {allData?.metadata.error?.map((error, i) => (
-            <text className="error-message" key={i}>
-              {error}
-            </text>
-          ))}
-        </span>
+        {loading && <span className="loading-message">Loading data...</span>}
+        {allData?.metadata.error?.map((error, i) => (
+          <span className="error-message" key={i}>
+            {error}
+          </span>
+        ))}
       </div>
 
       <div className="dashboard-row">
         <BasicChart
           levels={allData ? allData.metadata.all_water_levels : []}
           labels={allData ? allData.metadata.all_water_level_dates : []}
-          prediction_levels={((granularity === "water_level") && allPredictions) ? allPredictions.data.all_prediction_levels : []}
-          MHHW_levels={((granularity === "water_level") && allMeans) ? allMeans.data.all_MHHW_levels: []}
-          MLLW_levels={((granularity === "water_level") && allMeans) ? allMeans.data.all_MLLW_levels: []}
-          MHW_levels={((granularity === "water_level") && allMeans) ? allMeans.data.all_MHW_levels: []}
-          MLW_levels={((granularity === "water_level") && allMeans) ? allMeans.data.all_MLW_levels: []}
+          prediction_levels={
+            granularity === "water_level" && allPredictions
+              ? allPredictions.data.all_prediction_levels
+              : []
+          }
+          MHHW_levels={
+            granularity === "water_level" && allMeans
+              ? allMeans.data.all_MHHW_levels
+              : []
+          }
+          MLLW_levels={
+            granularity === "water_level" && allMeans
+              ? allMeans.data.all_MLLW_levels
+              : []
+          }
+          MHW_levels={
+            granularity === "water_level" && allMeans
+              ? allMeans.data.all_MHW_levels
+              : []
+          }
+          MLW_levels={
+            granularity === "water_level" && allMeans
+              ? allMeans.data.all_MLW_levels
+              : []
+          }
         />
         <Floods
           data={allData ? allData.data : []}

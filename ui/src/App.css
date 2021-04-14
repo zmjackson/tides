@@ -119,6 +119,13 @@ body {
   margin-left: 0;
 }
 
+.loading-message {
+  color: #00915c;
+  background-color: #d9ffe8;
+  padding: 5px;
+  margin-left: 1em;
+}
+
 .error-message {
   color: #bd1e00;
   background-color: #ffdfd9;
