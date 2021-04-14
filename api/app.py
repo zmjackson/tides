@@ -98,6 +98,12 @@ def request_basic_range(
     print(req, flush=True)
     return get(req)
 
+def request_basic_range_metadata(
+    stationId: str
+) -> Response:
+    req = "https://api.tidesandcurrents.noaa.gov/mdapi/prod/webapi/stations/" + stationId + "/datums.json?units=english"
+    print(req, flush=True)
+    return get(req)
 
 def data_from_response(response: Response):
     json_data = response.json()["data"]
@@ -203,6 +209,18 @@ def get_num_of_req_and_date_range(start_date, end_date):
             number_of_requests = math.ceil(date_range / 31)
 
     return number_of_requests, date_range, error
+
+
+def num_of_req_for_mean_data(start_date, end_date):
+    number_of_requests = 1
+
+    start_time = datetime.strptime(start_date, "%Y%m%d")
+    end_time = datetime.strptime(end_date, "%Y%m%d")
+    date_range_string = str(abs(end_time - start_time))
+
+    number_of_requests = int(date_range_string.split(" ")[0])
+
+    return (number_of_requests * 480)
 
 
 def update_date_range(number_of_requests, date_range, start_date, end_date):
@@ -510,22 +528,16 @@ def get_predictions():
     return ret
 
 
-def get_data_from_noaa_json(
-    resJson, all_levels, all_level_dates, missing_water_level_dates
-):
-    # all_levels = []
-    # all_level_dates = []
-    # missing_water_level_dates = []
-
-    for resJson in resJson["data"]:
-        all_level_dates.append(resJson["t"])
-        if resJson["v"] == "":
-            print("IGNORED")
-            missing_water_level_dates.append(resJson["t"])
-        else:
-            all_levels.append(resJson["v"])
-
-    return all_levels, all_level_dates, missing_water_level_dates
+def get_data_from_noaa_json(resJson, MHHW_Levels, MLLW_Levels, MHW_Levels, MLW_Levels):
+    for resJson in resJson["datums"]:
+        if(resJson["name"] == "MHHW"):
+            MHHW_Levels.append(resJson["value"])
+        if(resJson["name"] == "MLLW"):
+            MLLW_Levels.append(resJson["value"])
+        if(resJson["name"] == "MHW"):
+            MHW_Levels.append(resJson["value"])
+        if(resJson["name"] == "MLW"):
+            MLW_Levels.append(resJson["value"])
 
 
 @app.route("/getMeanData")
@@ -533,95 +545,44 @@ def get_mean_data():
     start_date = request.args["start_date"]
     end_date = request.args["end_date"]
     station_id = request.args["station_id"]
-    product = request.args["product"]
+    # product = request.args["product"]
 
-    # number_of_requests, date_range = get_num_of_req_and_date_range(
-    #     start_date, end_date)
 
-    number_of_requests, date_range, error = get_num_of_req_and_date_range(
+    number_of_requests = num_of_req_for_mean_data(
         start_date, end_date
     )
 
     mean_collection_data_json = {}
     data = {}
     all_MHHW_levels = []
-    all_MHHW_level_dates = []
+    # all_MHHW_level_dates = []
     all_MLLW_levels = []
-    all_MLLW_level_dates = []
+    # all_MLLW_level_dates = []
     all_MHW_levels = []
-    all_MHW_level_dates = []
+    # all_MHW_level_dates = []
     all_MLW_levels = []
     all_MLW_level_dates = []
     missing_water_level_dates = []
 
-    for x in range(number_of_requests):
-        if date_range == 0:
-            break
-        else:
-            date_range, end_date = update_date_range(
-                number_of_requests, date_range, start_date, end_date
-            )
+    resJson = request_basic_range_metadata(station_id).json()
 
-        try:
-            resJsonMHHW = request_basic_range(
-                start_date, end_date, station_id, product, "MHHW"
-            ).json()
-            resJsonMLLW = request_basic_range(
-                start_date, end_date, station_id, product, "MLLW"
-            ).json()
-            resJsonMLW = request_basic_range(
-                start_date, end_date, station_id, product, "MLW"
-            ).json()
-            resJsonMHW = request_basic_range(
-                start_date, end_date, station_id, product, "MHW"
-            ).json()
+    get_data_from_noaa_json(resJson, all_MHHW_levels, all_MLLW_levels, all_MHW_levels, all_MLW_levels)
 
-            try:
-                get_data_from_noaa_json(
-                    resJsonMHHW,
-                    all_MHHW_levels,
-                    all_MHHW_level_dates,
-                    missing_water_level_dates,
-                )
-                get_data_from_noaa_json(
-                    resJsonMLLW,
-                    all_MLLW_levels,
-                    all_MLLW_level_dates,
-                    missing_water_level_dates,
-                )
-                get_data_from_noaa_json(
-                    resJsonMHW,
-                    all_MHW_levels,
-                    all_MHW_level_dates,
-                    missing_water_level_dates,
-                )
-                get_data_from_noaa_json(
-                    resJsonMLW,
-                    all_MLW_levels,
-                    all_MLW_level_dates,
-                    missing_water_level_dates,
-                )
-
-            except KeyError:
-                missing_water_level_dates.append(start_date + "-" + end_date)
-                print("NO DATA AVAILABLE")
-        except:
-            missing_water_level_dates.append(start_date + "-" + end_date)
-
-        # update start date to be one past the end date
-        start_date = (
-            datetime.strptime(end_date, "%Y%m%d") + timedelta(days=1)
-        ).strftime("%Y%m%d")
+    for x in range(number_of_requests - 1):
+        all_MHHW_levels.append(all_MHHW_levels[0])
+        all_MLLW_levels.append(all_MLLW_levels[0])
+        all_MHW_levels.append(all_MHW_levels[0])
+        all_MLW_levels.append(all_MLW_levels[0])
 
     data["all_MHHW_levels"] = all_MHHW_levels
-    data["all_MHHW_level_dates"] = all_MHHW_level_dates
+    # data["all_MHHW_level_dates"] = all_MHHW_level_dates
     data["all_MLLW_levels"] = all_MLLW_levels
-    data["all_MLLW_level_dates"] = all_MLLW_level_dates
+    # data["all_MLLW_level_dates"] = all_MLLW_level_dates
     data["all_MHW_levels"] = all_MHW_levels
-    data["all_MHW_level_dates"] = all_MHW_level_dates
+    # data["all_MHW_level_dates"] = all_MHW_level_dates
     data["all_MLW_levels"] = all_MLW_levels
     data["all_MLW_level_dates"] = all_MLW_level_dates
-    data["missing_water_level_dates"] = missing_water_level_dates
+    # data["missing_water_level_dates"] = missing_water_level_dates
 
     mean_collection_data_json["data"] = data
 

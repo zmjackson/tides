@@ -112,9 +112,7 @@ export default function Dashboard({ station }: DashboardProps): JSX.Element {
           // prettier-ignore
           `/getMeanData?start_date=${startDate.toISOString().replaceAll("-", "").split("T")[0]
                             }&end_date=${endDate.toISOString().replaceAll("-", "").split("T")[0]
-                            }&station_id=${station.id
-                            }&product=${granularity
-                            }&datum=${datum}`
+                            }&station_id=${station.id}`
         )
           .then((res) => res.json())
           .then((res) => {
