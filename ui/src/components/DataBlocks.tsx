@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Table from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
 import TableCell from "@material-ui/core/TableCell";
@@ -7,7 +7,8 @@ import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
 import Paper from "@material-ui/core/Paper";
 import { Line } from "react-chartjs-2";
-import { FloodData } from "./Dashboard";
+import { FloodData, Datum } from "./Dashboard";
+import { StationMetaData } from "../types/Stations";
 
 type BasicChartProps = {
   levels: string[];
@@ -128,12 +129,12 @@ export function Floods({
 }: FloodsProps): JSX.Element {
   const onThresholdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newThreshold = parseFloat(e.target.value);
-    console.log(newThreshold);
     onSetThreshold(newThreshold);
   };
 
   return (
     <div className="data-block-container floods-block">
+      <h2>Water Level Threshold Exceeded</h2>
       <p>Threshold:</p>
       <input
         type="number"
@@ -142,7 +143,7 @@ export function Floods({
         value={threshold}
         onChange={onThresholdChange}
       />
-      <p>Floods:</p>
+      <p>Periods exceeded:</p>
       <TableContainer component={Paper}>
         <Table size="small" aria-label="a dense table">
           <TableHead>
@@ -167,6 +168,135 @@ export function Floods({
           </TableBody>
         </Table>
       </TableContainer>
+    </div>
+  );
+}
+
+type MonthSummary = { highest: string[]; lowest: string; rank: number };
+
+type SummaryData = {
+  [January: string]: MonthSummary;
+  February: MonthSummary;
+  March: MonthSummary;
+  April: MonthSummary;
+  May: MonthSummary;
+  June: MonthSummary;
+  July: MonthSummary;
+  August: MonthSummary;
+  September: MonthSummary;
+  October: MonthSummary;
+  November: MonthSummary;
+  December: MonthSummary;
+};
+
+type SummaryProps = { station: StationMetaData; datum: Datum };
+
+export function Summary({ station, datum }: SummaryProps): JSX.Element {
+  const [data, setData] = useState<SummaryData>();
+  const [dataAvailable, setDataAvailable] = useState<boolean>(false);
+  const [shouldHighlight, setShouldHighlight] = useState<boolean>(true);
+  const [highlightYears, setHighlightYears] = useState<number>(10);
+
+  useEffect(() => {
+    fetch(`/monthly_ranking?id=${station.id}&datum=${datum}`)
+      .then((res) => res.json())
+      .then((res) => {
+        setData(res);
+        setDataAvailable(true);
+      })
+      .catch(() => setDataAvailable(false));
+  }, [station, datum]);
+
+  const onHighlightYearsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setHighlightYears(parseInt(e.target.value));
+  };
+
+  const onShouldHighlightChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setShouldHighlight(e.target.checked);
+  };
+
+  const isWithinHighlightRange = (year: Date): boolean => {
+    const compare = new Date();
+    compare.setFullYear(compare.getFullYear() - highlightYears);
+    return year >= compare;
+  };
+
+  return (
+    <div className="data-block-container summary-block">
+      <h2>Mean Monthly Water Level Ranking</h2>
+      <table className="summary-table">
+        <tbody>
+          <tr>
+            <th>Month</th>
+            <th>1st</th>
+            <th>2nd</th>
+            <th>3rd</th>
+            <th>Lowest</th>
+            <th>Rank</th>
+          </tr>
+          {dataAvailable ? (
+            data &&
+            Object.keys(data).map((month) => (
+              <tr key={month}>
+                <td>{month}</td>
+                <td
+                  className={
+                    isWithinHighlightRange(new Date(data[month].highest[0]))
+                      ? "highlight"
+                      : ""
+                  }
+                >
+                  {data[month].highest[0]}
+                </td>
+                <td
+                  className={
+                    isWithinHighlightRange(new Date(data[month].highest[1]))
+                      ? "highlight"
+                      : ""
+                  }
+                >
+                  {data[month].highest[1]}
+                </td>
+                <td
+                  className={
+                    isWithinHighlightRange(new Date(data[month].highest[2]))
+                      ? "highlight"
+                      : ""
+                  }
+                >
+                  {data[month].highest[2]}
+                </td>
+                <td>{data[month].lowest}</td>
+                <td>{data[month].rank}</td>
+              </tr>
+            ))
+          ) : (
+            <p>
+              Ranking data unavailable. This is probably because you selected a
+              datum for which there is not historical data
+            </p>
+          )}
+        </tbody>
+      </table>
+      <div>
+        <input
+          type="checkbox"
+          checked={shouldHighlight}
+          onChange={onShouldHighlightChange}
+        />
+        <label htmlFor="coding">
+          <span>Highlight monthly averages that occured in the past: </span>
+          <input
+            type="number"
+            min="0"
+            max="200"
+            value={highlightYears}
+            onChange={onHighlightYearsChange}
+            style={{ maxWidth: "3em" }}
+          />
+        </label>
+        <span> years</span>
+      </div>
     </div>
   );
 }

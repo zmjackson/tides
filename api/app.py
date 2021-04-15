@@ -1,24 +1,15 @@
 from flask import Flask, request
 import json
+from flask.globals import current_app
 import mysql.connector
 from requests import get, Response
 import time
 from datetime import datetime
 from datetime import timedelta
+from dateutil.relativedelta import relativedelta
 import math
-import numpy as np
-import string
-from typing import Tuple, Optional
 
 app = Flask(__name__)
-
-
-@app.route("/time")
-def get_current_time():
-    return {"time": time.time()}
-
-
-# https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?date=latest&station=8454000&product=water_level&datum=STND&units=english&time_zone=gmt&application=ports_screen&format=json
 
 
 @app.route("/basic_test")
@@ -49,7 +40,6 @@ def coords_test():
             ]
         )
     )
-    print(req, flush=True)
 
     res = get(req)
     return res.json()
@@ -95,27 +85,7 @@ def request_basic_range(
             ]
         )
     )
-    print(req, flush=True)
     return get(req)
-
-
-def data_from_response(response: Response):
-    json_data = response.json()["data"]
-
-    timestamps = np.zeros(len(json_data), dtype="datetime64[m]")
-    levels = np.zeros(len(json_data))
-    sigmas = np.zeros(len(json_data))
-
-    for (i, data_point) in enumerate(json_data):
-        timestamps[i] = data_point["t"]
-        levels[i] = data_point["v"]
-        if data_point["s"] != "":
-            sigmas[i] = data_point["s"]
-
-    return timestamps, levels, sigmas
-
-
-# def request_extended_range(start: str, end: str, station_id: str):
 
 
 @app.route("/station_metadata")
@@ -137,49 +107,59 @@ def get_station_metadata():
     return json.dumps(metadata)
 
 
-@app.route("/basic_range")
-def get_basic_range():
-    begin = request.args["begin_date"]
-    end = request.args["end_date"]
-    id = request.args["station_id"]
-    product = request.args["product"]
+@app.route("/monthly_ranking")
+def get_monthly_ranking():
+    id = request.args["id"]
+    datum = request.args["datum"]
 
-    res = request_basic_range(begin, end, id, product)
+    most_recent_year = (datetime.today() - relativedelta(years=1)).strftime("%Y")
 
-    if res.status_code != 200 or res.status_code == 400 or "data" not in res.json():
-        # return res.content, res.status_code, res.headers.items()
-        return {"data": {"timestamps": ["0"], "levels": ["0"]}}
+    res = request_basic_range(
+        "19000101",
+        most_recent_year + "1231",
+        id,
+        "monthly_mean",
+        datum="STND",
+    )
 
-    timestamps, levels, _ = data_from_response(res)
+    if res.status_code != 200 or "data" not in res.json():
+        return {"error": "NOAA API request failed"}
 
-    return {
-        "data": {
-            "timestamps": np.datetime_as_string(timestamps).tolist(),
-            "levels": levels.tolist(),
-        }
+    json_data = res.json()["data"]
+
+    monthly_rankings = {
+        "January": {"highest": [], "lowest": None, "rank": None},
+        "February": {"highest": [], "lowest": None, "rank": None},
+        "March": {"highest": [], "lowest": None, "rank": None},
+        "April": {"highest": [], "lowest": None, "rank": None},
+        "May": {"highest": [], "lowest": None, "rank": None},
+        "June": {"highest": [], "lowest": None, "rank": None},
+        "July": {"highest": [], "lowest": None, "rank": None},
+        "August": {"highest": [], "lowest": None, "rank": None},
+        "September": {"highest": [], "lowest": None, "rank": None},
+        "October": {"highest": [], "lowest": None, "rank": None},
+        "November": {"highest": [], "lowest": None, "rank": None},
+        "December": {"highest": [], "lowest": None, "rank": None},
     }
 
+    for month_num, month_name in enumerate(monthly_rankings.keys()):
+        valid_data_for_this_month = [
+            data_point
+            for data_point in json_data
+            if data_point[datum] and int(data_point["month"]) == month_num + 1
+        ]
 
-@app.route("/floods")
-def get_floods():
-    begin = request.args["begin_date"]
-    end = request.args["end_date"]
-    id = request.args["station_id"]
-    product = request.args["product"]
-    threshold = request.args["threshold"]
-
-    res = request_basic_range(begin, end, id, product)
-
-    if res.status_code != 200 or res.status_code == 400 or "data" not in res.json():
-        # return res.content, res.status_code, res.headers.items()
-        return {"data": ["0"]}
-
-    timestamps, levels, _ = data_from_response(res)
-    return {
-        "data": list(
-            np.datetime_as_string(timestamps[np.where(levels > float(threshold))])
+        s = sorted(
+            valid_data_for_this_month, key=lambda data: float(data[datum]), reverse=True
         )
-    }
+
+        monthly_rankings[month_name]["highest"] = [data["year"] for data in s[0:3]]
+        monthly_rankings[month_name]["lowest"] = s[-1]["year"]
+        monthly_rankings[month_name]["rank"] = [
+            i for i, data in enumerate(s) if data["year"] == most_recent_year
+        ][0] + 1
+
+    return monthly_rankings
 
 
 def get_num_of_req_and_date_range(start_date, end_date):
@@ -235,7 +215,6 @@ def get_duration_month(start_date, end_date, isEnd):
     year_delta = int(end_date.split("-")[0]) - int(start_date.split("-")[0])
 
     time_delta = month_delta + (year_delta * 12)
-    print(isEnd)
     if isEnd:
         time_delta = time_delta + 1
     time_delta_str = str(time_delta) + " month"
@@ -311,7 +290,6 @@ def get_flood_level_data():
                             resJson["year"] + "-" + resJson["month"]
                         )
                         if resJson["MSL"] == "":
-                            print("IGNORED")
                             missing_water_level_dates.append(
                                 resJson["year"] + "-" + resJson["month"]
                             )
@@ -361,7 +339,6 @@ def get_flood_level_data():
                         index = index + 1
                         all_water_level_dates.append(resJson["t"])
                         if resJson["v"] == "":
-                            print("IGNORED")
                             missing_water_level_dates.append(resJson["t"])
                         else:
                             all_flood_levels.append(resJson["v"])
@@ -417,10 +394,6 @@ def get_flood_level_data():
                     )
                 else:
                     error_message.append("Data not available given current date range")
-
-            # except:
-            #     missing_water_level_dates.append(start_date + "-" + end_date)
-            #     print("WHAT THE FUCK")
 
             # update start date to be one past the end date
             start_date = (
@@ -485,13 +458,11 @@ def get_predictions():
                     index = index + 1
                     all_prediction_level_dates.append(resJson["t"])
                     if resJson["v"] == "":
-                        print("IGNORED")
                         missing_water_level_dates.append(resJson["t"])
                     else:
                         all_prediction_levels.append(resJson["v"])
             except KeyError:
                 missing_water_level_dates.append(start_date + "-" + end_date)
-                print("NO DATA AVAILABLE")
         except:
             missing_water_level_dates.append(start_date + "-" + end_date)
 
@@ -520,7 +491,6 @@ def get_data_from_noaa_json(
     for resJson in resJson["data"]:
         all_level_dates.append(resJson["t"])
         if resJson["v"] == "":
-            print("IGNORED")
             missing_water_level_dates.append(resJson["t"])
         else:
             all_levels.append(resJson["v"])
@@ -604,7 +574,6 @@ def get_mean_data():
 
             except KeyError:
                 missing_water_level_dates.append(start_date + "-" + end_date)
-                print("NO DATA AVAILABLE")
         except:
             missing_water_level_dates.append(start_date + "-" + end_date)
 

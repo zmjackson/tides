@@ -149,11 +149,29 @@ body {
 }
 
 .chart-block {
-  flex: 2 1 0;
+  flex: 3 1 0;
 }
 
 .floods-block {
-  flex: 1 1 0;
+  flex: 2 1 0;
+}
+
+.summary-block {
+  flex: 2 1 0;
+}
+
+.summary-table {
+  border-collapse: collapse;
+}
+
+.summary-table th,
+.summary-table td {
+  padding: 8px;
+  border: 1px solid #ddd;
+}
+
+.highlight {
+  background-color: #ffcf8c;
 }
 
 .data-views-container {

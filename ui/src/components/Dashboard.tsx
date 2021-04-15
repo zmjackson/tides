@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { StationMetaData } from "../types/Stations";
-import { BasicChart, Floods } from "./DataBlocks";
+import { BasicChart, Floods, Summary } from "./DataBlocks";
 
 export type Granularity = "water_level" | "hourly_height" | "monthly_mean";
 
@@ -72,7 +72,7 @@ export default function Dashboard({ station }: DashboardProps): JSX.Element {
   const [endDate, setEndDate] = useState<Date>(new Date());
   const [granularity, setGranularity] = useState<Granularity>("water_level");
   const [threshold, setThreshold] = useState<number>(0);
-  const [datum, setDatum] = useState<Datum>("STND");
+  const [datum, setDatum] = useState<Datum>("MLW");
   const [allData, setAllData] = useState<AllData>();
   const [allPredictions, setAllPredictions] = useState<AllPredictionData>();
   const [allMeans, setAllMeanData] = useState<AllMeanData>();
@@ -92,6 +92,7 @@ export default function Dashboard({ station }: DashboardProps): JSX.Element {
       .then((res) => res.json())
       .then((res) => {
         setAllData(res);
+        setLoading(false);
       });
 
     fetch(
@@ -118,7 +119,6 @@ export default function Dashboard({ station }: DashboardProps): JSX.Element {
       .then((res) => res.json())
       .then((res) => {
         setAllMeanData(res);
-        setLoading(false);
       });
   }, [station, startDate, endDate, granularity, threshold, datum]);
 
@@ -207,6 +207,7 @@ export default function Dashboard({ station }: DashboardProps): JSX.Element {
           threshold={threshold}
           onSetThreshold={(threshold) => setThreshold(threshold)}
         />
+        <Summary station={station} datum={datum} />
       </div>
     </div>
   );
