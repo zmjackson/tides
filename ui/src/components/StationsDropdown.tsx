@@ -118,7 +118,7 @@ export const StationsDropdown = ({
               <DropdownContent stations={stations} addStation={addStation} />
             </div>
             <div style={styles.right}>
-              <StationMap stations={stations} />
+              <StationMap stations={stations} addStation={addStation} />
             </div>
           </div>
         </DetectOutsideClick>

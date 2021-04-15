@@ -4,9 +4,15 @@ import L, { LatLngExpression } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { StationMetaData } from "../types/Stations";
 
-type Props = { stations: StationMetaData[] };
+type Props = {
+  stations: StationMetaData[];
+  addStation: (station: StationMetaData) => void;
+};
 
-export default function StationMap({ stations }: Props): JSX.Element {
+export default function StationMap({
+  stations,
+  addStation,
+}: Props): JSX.Element {
   const position: LatLngExpression = [39.135, -98.0317];
 
   const zoom = 3;
@@ -43,6 +49,9 @@ export default function StationMap({ stations }: Props): JSX.Element {
             <br />
             <strong>Station ID: {station.id}</strong>
             <br />
+            <button>
+              <button onClick={() => addStation({ ...station })}>Select</button>
+            </button>
           </Popup>
         </Marker>
       ))}
